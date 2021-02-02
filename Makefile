@@ -53,14 +53,16 @@ allmost: lib lz4
 
 .PHONY: lib lib-release liblz4.a
 lib: liblz4.a
+lib lib-release liblz4.a: CC = test-generator
 lib lib-release liblz4.a:
-	$(MAKE) -C $(LZ4DIR) $@
+	$(MAKE) -C $(LZ4DIR) CC=$(CC) $@
 
 .PHONY: lz4 lz4-release
 lz4 : liblz4.a
 lz4-release : lib-release
+lz4 lz4-release : CC = test-generator
 lz4 lz4-release :
-	$(MAKE) -C $(PRGDIR) $@
+	$(MAKE) -C $(PRGDIR) CC=$(CC) $@
 	cp $(PRGDIR)/lz4$(EXT) .
 
 .PHONY: examples
