@@ -22,6 +22,8 @@ inspecode:
       thresholds: {num-issues: 999}
 
     cpplint:
+      options:
+        --filter:+,-whitespace,-readability/casting
       thresholds: {num-issues: 999}
 
     # fortify:
@@ -46,6 +48,7 @@ inspecode:
       thresholds: {num-issues: 999}
 
     uncrustify:
+      config-file: '.rocro/uncrustify.cfg'
       auto-fix: true
       thresholds: {num-issues: 999}
 
