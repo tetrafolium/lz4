@@ -23,7 +23,10 @@ inspecode:
 
     cpplint:
       options:
-        --filter:+,-whitespace,-readability/casting
+        --filter:
+          - +
+          - -whitespace
+          - -readability/casting
       thresholds: {num-issues: 999}
 
     # fortify:
