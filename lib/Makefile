@@ -56,7 +56,7 @@ CFLAGS  += $(DEBUGFLAGS)
 FLAGS    = $(CFLAGS) $(CPPFLAGS) $(LDFLAGS)
 
 TESTGEN      ?= rocro-testgen
-TESTGENFLAGS ?= --timeout=600
+TESTGENFLAGS ?= ---build
 
 SRCFILES := $(sort $(wildcard *.c))
 
@@ -83,8 +83,8 @@ default: lib-release
 $(V)$(VERBOSE).SILENT:
 
 .PHONY: testgen
-testgen: CFLAGS = $(TESTGENFLAGS)
 testgen: CC     = $(TESTGEN)
+testgen: CFLAGS = $(TESTGENFLAGS)
 testgen: lib
 
 .PHONY: lib-release

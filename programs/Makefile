@@ -55,7 +55,7 @@ CFLAGS   += $(DEBUGFLAGS) $(MOREFLAGS)
 FLAGS     = $(CFLAGS) $(CPPFLAGS) $(LDFLAGS)
 
 TESTGEN      ?= rocro-testgen
-TESTGENFLAGS ?= --timeout=600
+TESTGENFLAGS ?= ---build
 
 LZ4_VERSION=$(LIBVER)
 MD2ROFF   = ronn
@@ -74,8 +74,8 @@ all32: CFLAGS+=-m32
 all32: all
 
 .PHONY: testgen
-testgen: CFLAGS = $(TESTGENFLAGS)
 testgen: CC     = $(TESTGEN)
+testgen: CFLAGS = $(TESTGENFLAGS)
 testgen: all
 
 ifeq ($(WINBASED),yes)

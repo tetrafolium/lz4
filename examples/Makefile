@@ -33,7 +33,7 @@ CFLAGS   += -std=gnu99 -Wall -Wextra -Wundef -Wshadow -Wcast-align -Wstrict-prot
 FLAGS     = $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) $(MOREFLAGS)
 
 TESTGEN      ?= rocro-testgen
-TESTGENFLAGS ?= --timeout=600
+TESTGENFLAGS ?= ---build
 
 TESTFILE  = Makefile
 LZ4DIR   := ../lib
@@ -47,8 +47,8 @@ all: printVersion doubleBuffer dictionaryRandomAccess ringBuffer ringBufferHC \
      lineCompress frameCompress simpleBuffer
 
 .PHONY: testgen
-testgen: CFLAGS = $(TESTGENFLAGS)
 testgen: CC     = $(TESTGEN)
+testgen: CFLAGS = $(TESTGENFLAGS)
 testgen: all
 
 $(LZ4DIR)/liblz4.a: $(LZ4DIR)/lz4.c $(LZ4DIR)/lz4hc.c $(LZ4DIR)/lz4frame.c $(LZ4DIR)/lz4.h $(LZ4DIR)/lz4hc.h $(LZ4DIR)/lz4frame.h $(LZ4DIR)/lz4frame_static.h

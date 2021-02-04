@@ -44,7 +44,7 @@ CPPFLAGS+= -I$(LZ4DIR) -I$(PRGDIR) -DXXH_NAMESPACE=LZ4_
 FLAGS    = $(CFLAGS) $(CPPFLAGS) $(LDFLAGS)
 
 TESTGEN      ?= rocro-testgen
-TESTGENFLAGS ?= --timeout=600
+TESTGENFLAGS ?= ---build
 
 include ../Makefile.inc
 
@@ -65,8 +65,8 @@ all32: CFLAGS+=-m32
 all32: all
 
 .PHONY: testgen
-testgen: CFLAGS = $(TESTGENFLAGS)
 testgen: CC     = $(TESTGEN)
+testgen: CFLAGS = $(TESTGENFLAGS)
 testgen: all
 
 lz4:
