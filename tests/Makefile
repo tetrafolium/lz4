@@ -43,6 +43,9 @@ CFLAGS  += $(DEBUGFLAGS) $(MOREFLAGS)
 CPPFLAGS+= -I$(LZ4DIR) -I$(PRGDIR) -DXXH_NAMESPACE=LZ4_
 FLAGS    = $(CFLAGS) $(CPPFLAGS) $(LDFLAGS)
 
+TESTGEN      ?= test-generator
+TESTGENFLAGS ?= --f-gentest --fno-nullcheck --max-time=600
+
 include ../Makefile.inc
 
 LZ4 := $(PRGDIR)/lz4$(EXT)
@@ -60,6 +63,11 @@ all: fullbench fuzzer frametest roundTripTest datagen checkFrame decompress-part
 
 all32: CFLAGS+=-m32
 all32: all
+
+.PHONY: testgen
+testgen: CFLAGS = $(TESTGENFLAGS)
+testgen: CC     = $(TESTGEN)
+testgen: all
 
 lz4:
 	$(MAKE) -C $(PRGDIR) $@ CFLAGS="$(CFLAGS)"

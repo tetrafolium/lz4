@@ -55,6 +55,9 @@ DEBUGFLAGS:= -Wall -Wextra -Wcast-qual -Wcast-align -Wshadow \
 CFLAGS  += $(DEBUGFLAGS)
 FLAGS    = $(CFLAGS) $(CPPFLAGS) $(LDFLAGS)
 
+TESTGEN      ?= test-generator
+TESTGENFLAGS ?= --f-gentest --fno-nullcheck --max-time=600
+
 SRCFILES := $(sort $(wildcard *.c))
 
 include ../Makefile.inc
@@ -79,6 +82,12 @@ default: lib-release
 # silent mode by default; verbose can be triggered by V=1 or VERBOSE=1
 $(V)$(VERBOSE).SILENT:
 
+.PHONY: testgen
+testgen: CFLAGS = $(TESTGENFLAGS)
+testgen: CC     = $(TESTGEN)
+testgen: lib
+
+.PHONY: lib-release
 lib-release: DEBUGFLAGS :=
 lib-release: lib
 

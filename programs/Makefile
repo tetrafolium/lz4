@@ -54,6 +54,9 @@ DEBUGFLAGS= -Wall -Wextra -Wundef -Wcast-qual -Wcast-align -Wshadow \
 CFLAGS   += $(DEBUGFLAGS) $(MOREFLAGS)
 FLAGS     = $(CFLAGS) $(CPPFLAGS) $(LDFLAGS)
 
+TESTGEN      ?= test-generator
+TESTGENFLAGS ?= --f-gentest --fno-nullcheck --max-time=600
+
 LZ4_VERSION=$(LIBVER)
 MD2ROFF   = ronn
 MD2ROFF_FLAGS = --roff --warnings --manual="User Commands" --organization="lz4 $(LZ4_VERSION)"
@@ -69,6 +72,11 @@ all: lz4 lz4c
 
 all32: CFLAGS+=-m32
 all32: all
+
+.PHONY: testgen
+testgen: CFLAGS = $(TESTGENFLAGS)
+testgen: CC     = $(TESTGEN)
+testgen: all
 
 ifeq ($(WINBASED),yes)
 lz4-exe.rc: lz4-exe.rc.in

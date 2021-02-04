@@ -30,7 +30,10 @@
 CPPFLAGS += -I../lib
 CFLAGS   ?= -O3
 CFLAGS   += -std=gnu99 -Wall -Wextra -Wundef -Wshadow -Wcast-align -Wstrict-prototypes
-FLAGS    := $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) $(MOREFLAGS)
+FLAGS     = $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) $(MOREFLAGS)
+
+TESTGEN      ?= test-generator
+TESTGENFLAGS ?= --f-gentest --fno-nullcheck --max-time=600
 
 TESTFILE  = Makefile
 LZ4DIR   := ../lib
@@ -42,6 +45,11 @@ default: all
 
 all: printVersion doubleBuffer dictionaryRandomAccess ringBuffer ringBufferHC \
      lineCompress frameCompress simpleBuffer
+
+.PHONY: testgen
+testgen: CFLAGS = $(TESTGENFLAGS)
+testgen: CC     = $(TESTGEN)
+testgen: all
 
 $(LZ4DIR)/liblz4.a: $(LZ4DIR)/lz4.c $(LZ4DIR)/lz4hc.c $(LZ4DIR)/lz4frame.c $(LZ4DIR)/lz4.h $(LZ4DIR)/lz4hc.h $(LZ4DIR)/lz4frame.h $(LZ4DIR)/lz4frame_static.h
 	$(MAKE) -C $(LZ4DIR) liblz4.a

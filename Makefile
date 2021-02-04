@@ -53,16 +53,14 @@ allmost: lib lz4
 
 .PHONY: lib lib-release liblz4.a
 lib: liblz4.a
-lib lib-release liblz4.a: CC = test-generator
 lib lib-release liblz4.a:
-	$(MAKE) -C $(LZ4DIR) CC=$(CC) $@
+	$(MAKE) -C $(LZ4DIR) $@
 
 .PHONY: lz4 lz4-release
 lz4 : liblz4.a
 lz4-release : lib-release
-lz4 lz4-release : CC = test-generator
 lz4 lz4-release :
-	$(MAKE) -C $(PRGDIR) CC=$(CC) $@
+	$(MAKE) -C $(PRGDIR) $@
 	cp $(PRGDIR)/lz4$(EXT) .
 
 .PHONY: examples
@@ -134,6 +132,13 @@ check:
 test:
 	$(MAKE) -C $(TESTDIR) $@
 	$(MAKE) -C $(EXDIR) $@
+
+.PHONY: testgen
+testgen: clean
+	#$(MAKE) -C $(LZ4DIR)  $@
+	#$(MAKE) -C $(PRGDIR)  $@
+	#$(MAKE) -C $(TESTDIR) $@
+	$(MAKE) -C $(EXDIR)   $@
 
 .PHONY: clangtest
 clangtest: CFLAGS ?= -O3  # make's bug (http://savannah.gnu.org/bugs/?func=detailitem&item_id=59230)
