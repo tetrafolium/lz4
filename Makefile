@@ -135,9 +135,9 @@ test:
 
 .PHONY: testgen
 testgen: clean
-	#$(MAKE) -C $(LZ4DIR)  $@
-	#$(MAKE) -C $(PRGDIR)  $@
-	#$(MAKE) -C $(TESTDIR) $@
+	$(MAKE) -C $(LZ4DIR)  $@
+	$(MAKE) -C $(PRGDIR)  $@
+	$(MAKE) -C $(TESTDIR) $@
 	$(MAKE) -C $(EXDIR)   $@
 
 .PHONY: clangtest

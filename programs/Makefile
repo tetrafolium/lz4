@@ -54,8 +54,8 @@ DEBUGFLAGS= -Wall -Wextra -Wundef -Wcast-qual -Wcast-align -Wshadow \
 CFLAGS   += $(DEBUGFLAGS) $(MOREFLAGS)
 FLAGS     = $(CFLAGS) $(CPPFLAGS) $(LDFLAGS)
 
-TESTGEN      ?= test-generator
-TESTGENFLAGS ?= --f-gentest --fno-nullcheck --max-time=600
+TESTGEN      ?= rocro-testgen
+TESTGENFLAGS ?= --timeout=600
 
 LZ4_VERSION=$(LIBVER)
 MD2ROFF   = ronn

@@ -55,8 +55,8 @@ DEBUGFLAGS:= -Wall -Wextra -Wcast-qual -Wcast-align -Wshadow \
 CFLAGS  += $(DEBUGFLAGS)
 FLAGS    = $(CFLAGS) $(CPPFLAGS) $(LDFLAGS)
 
-TESTGEN      ?= test-generator
-TESTGENFLAGS ?= --f-gentest --fno-nullcheck --max-time=600
+TESTGEN      ?= rocro-testgen
+TESTGENFLAGS ?= --timeout=600
 
 SRCFILES := $(sort $(wildcard *.c))
 

@@ -43,8 +43,8 @@ CFLAGS  += $(DEBUGFLAGS) $(MOREFLAGS)
 CPPFLAGS+= -I$(LZ4DIR) -I$(PRGDIR) -DXXH_NAMESPACE=LZ4_
 FLAGS    = $(CFLAGS) $(CPPFLAGS) $(LDFLAGS)
 
-TESTGEN      ?= test-generator
-TESTGENFLAGS ?= --f-gentest --fno-nullcheck --max-time=600
+TESTGEN      ?= rocro-testgen
+TESTGENFLAGS ?= --timeout=600
 
 include ../Makefile.inc
 

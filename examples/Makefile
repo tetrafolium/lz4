@@ -32,8 +32,8 @@ CFLAGS   ?= -O3
 CFLAGS   += -std=gnu99 -Wall -Wextra -Wundef -Wshadow -Wcast-align -Wstrict-prototypes
 FLAGS     = $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) $(MOREFLAGS)
 
-TESTGEN      ?= test-generator
-TESTGENFLAGS ?= --f-gentest --fno-nullcheck --max-time=600
+TESTGEN      ?= rocro-testgen
+TESTGENFLAGS ?= --timeout=600
 
 TESTFILE  = Makefile
 LZ4DIR   := ../lib
