@@ -110,10 +110,21 @@ int main(int argc, char** argv)
                         size += *argument - '0';
                         argument++;
                     }
-                    if (*argument=='K') { size <<= 10; argument++; }
-                    if (*argument=='M') { size <<= 20; argument++; }
-                    if (*argument=='G') { size <<= 30; argument++; }
-                    if (*argument=='B') { argument++; }
+                    if (*argument=='K') {
+                        size <<= 10;
+                        argument++;
+                    }
+                    if (*argument=='M') {
+                        size <<= 20;
+                        argument++;
+                    }
+                    if (*argument=='G') {
+                        size <<= 30;
+                        argument++;
+                    }
+                    if (*argument=='B') {
+                        argument++;
+                    }
                     break;
                 case 's':
                     argument++;

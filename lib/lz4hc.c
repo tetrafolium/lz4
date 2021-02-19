@@ -85,7 +85,9 @@ typedef enum { noDictCtx, usingDictCtxHc } dictCtx_directive;
 /* Make fields passed to, and updated by LZ4HC_encodeSequence explicit */
 #define UPDATABLE(ip, op, anchor) &ip, &op, &anchor
 
-static U32 LZ4HC_hashPtr(const void* ptr) { return HASH_FUNCTION(LZ4_read32(ptr)); }
+static U32 LZ4HC_hashPtr(const void* ptr) {
+    return HASH_FUNCTION(LZ4_read32(ptr));
+}
 
 
 /**************************************
@@ -144,11 +146,13 @@ int LZ4HC_countBack(const BYTE* const ip, const BYTE* const match,
     int back = 0;
     int const min = (int)MAX(iMin - ip, mMin - match);
     assert(min <= 0);
-    assert(ip >= iMin); assert((size_t)(ip-iMin) < (1U<<31));
-    assert(match >= mMin); assert((size_t)(match - mMin) < (1U<<31));
+    assert(ip >= iMin);
+    assert((size_t)(ip-iMin) < (1U<<31));
+    assert(match >= mMin);
+    assert((size_t)(match - mMin) < (1U<<31));
     while ( (back > min)
-         && (ip[back-1] == match[back-1]) )
-            back--;
+            && (ip[back-1] == match[back-1]) )
+        back--;
     return back;
 }
 
@@ -173,11 +177,14 @@ LZ4HC_countPattern(const BYTE* ip, const BYTE* const iEnd, U32 const pattern32)
 {
     const BYTE* const iStart = ip;
     reg_t const pattern = (sizeof(pattern)==8) ?
-        (reg_t)pattern32 + (((reg_t)pattern32) << (sizeof(pattern)*4)) : pattern32;
+                          (reg_t)pattern32 + (((reg_t)pattern32) << (sizeof(pattern)*4)) : pattern32;
 
     while (likely(ip < iEnd-(sizeof(pattern)-1))) {
         reg_t const diff = LZ4_read_ARCH(ip) ^ pattern;
-        if (!diff) { ip+=sizeof(pattern); continue; }
+        if (!diff) {
+            ip+=sizeof(pattern);
+            continue;
+        }
         ip += LZ4_NbCommonBytes(diff);
         return (unsigned)(ip - iStart);
     }
@@ -185,14 +192,16 @@ LZ4HC_countPattern(const BYTE* ip, const BYTE* const iEnd, U32 const pattern32)
     if (LZ4_isLittleEndian()) {
         reg_t patternByte = pattern;
         while ((ip<iEnd) && (*ip == (BYTE)patternByte)) {
-            ip++; patternByte >>= 8;
+            ip++;
+            patternByte >>= 8;
         }
     } else {  /* big endian */
         U32 bitOffset = (sizeof(pattern)*8) - 8;
         while (ip < iEnd) {
             BYTE const byte = (BYTE)(pattern >> bitOffset);
             if (*ip != byte) break;
-            ip ++; bitOffset -= 8;
+            ip ++;
+            bitOffset -= 8;
         }
     }
 
@@ -214,8 +223,10 @@ LZ4HC_reverseCountPattern(const BYTE* ip, const BYTE* const iLow, U32 pattern)
     {   const BYTE* bytePtr = (const BYTE*)(&pattern) + 3; /* works for any endianess */
         while (likely(ip>iLow)) {
             if (ip[-1] != *bytePtr) break;
-            ip--; bytePtr--;
-    }   }
+            ip--;
+            bytePtr--;
+        }
+    }
     return (unsigned)(iStart - ip);
 }
 
@@ -269,7 +280,7 @@ LZ4HC_InsertAndGetWiderMatch (
     LZ4HC_Insert(hc4, ip);
     matchIndex = HashTable[LZ4HC_hashPtr(ip)];
     DEBUGLOG(7, "First match at index %u / %u (lowestMatchIndex)",
-                matchIndex, lowestMatchIndex);
+             matchIndex, lowestMatchIndex);
 
     while ((matchIndex>=lowestMatchIndex) && (nbAttempts>0)) {
         int matchLength=0;
@@ -291,7 +302,9 @@ LZ4HC_InsertAndGetWiderMatch (
                         longest = matchLength;
                         *matchpos = matchPtr + back;
                         *startpos = ip + back;
-            }   }   }
+                    }
+                }
+            }
         } else {   /* lowestMatchIndex <= matchIndex < dictLimit */
             const BYTE* const matchPtr = dictBase + matchIndex;
             if (LZ4_read32(matchPtr) == pattern) {
@@ -308,7 +321,9 @@ LZ4HC_InsertAndGetWiderMatch (
                     longest = matchLength;
                     *matchpos = base + matchIndex + back;   /* virtual pos, relative to ip, to retrieve offset */
                     *startpos = ip + back;
-        }   }   }
+                }
+            }
+        }
 
         if (chainSwap && matchLength==longest) {    /* better match => select a better chain */
             assert(lookBackLength==0);   /* search forward only */
@@ -332,7 +347,9 @@ LZ4HC_InsertAndGetWiderMatch (
                     if (distanceToNextMatch > matchIndex) break;   /* avoid overflow */
                     matchIndex -= distanceToNextMatch;
                     continue;
-        }   }   }
+                }
+            }
+        }
 
         {   U32 const distNextMatch = DELTANEXTU16(chainTable, matchIndex);
             if (patternAnalysis && distNextMatch==1 && matchChainPos==0) {
@@ -340,14 +357,15 @@ LZ4HC_InsertAndGetWiderMatch (
                 /* may be a repeated pattern */
                 if (repeat == rep_untested) {
                     if ( ((pattern & 0xFFFF) == (pattern >> 16))
-                      &  ((pattern & 0xFF)   == (pattern >> 24)) ) {
+                            &  ((pattern & 0xFF)   == (pattern >> 24)) ) {
                         repeat = rep_confirmed;
                         srcPatternLength = LZ4HC_countPattern(ip+sizeof(pattern), iHighLimit, pattern) + sizeof(pattern);
                     } else {
                         repeat = rep_not;
-                }   }
+                    }
+                }
                 if ( (repeat == rep_confirmed) && (matchCandidateIdx >= lowestMatchIndex)
-                  && LZ4HC_protectDictEnd(dictLimit, matchCandidateIdx) ) {
+                        && LZ4HC_protectDictEnd(dictLimit, matchCandidateIdx) ) {
                     const int extDict = matchCandidateIdx < dictLimit;
                     const BYTE* const matchPtr = (extDict ? dictBase : base) + matchCandidateIdx;
                     if (LZ4_read32(matchPtr) == pattern) {  /* good candidate */
@@ -371,7 +389,7 @@ LZ4HC_InsertAndGetWiderMatch (
                             currentSegmentLength = backLength + forwardPatternLength;
                             /* Adjust to end of pattern if the source pattern fits, otherwise the beginning of the pattern */
                             if ( (currentSegmentLength >= srcPatternLength)   /* current pattern segment large enough to contain full srcPatternLength */
-                              && (forwardPatternLength <= srcPatternLength) ) { /* haven't reached this position yet */
+                                    && (forwardPatternLength <= srcPatternLength) ) { /* haven't reached this position yet */
                                 U32 const newMatchIndex = matchCandidateIdx + (U32)forwardPatternLength - (U32)srcPatternLength;  /* best position, full pattern, might be followed by more match */
                                 if (LZ4HC_protectDictEnd(dictLimit, newMatchIndex))
                                     matchIndex = newMatchIndex;
@@ -400,10 +418,16 @@ LZ4HC_InsertAndGetWiderMatch (
                                         {   U32 const distToNextPattern = DELTANEXTU16(chainTable, matchIndex);
                                             if (distToNextPattern > matchIndex) break;  /* avoid overflow */
                                             matchIndex -= distToNextPattern;
-                        }   }   }   }   }
+                                        }
+                                    }
+                                }
+                            }
+                        }
                         continue;
-                }   }
-        }   }   /* PA optimization */
+                    }
+                }
+            }
+        }   /* PA optimization */
 
         /* follow current chain */
         matchIndex -= DELTANEXTU16(chainTable, matchIndex + matchChainPos);
@@ -411,8 +435,8 @@ LZ4HC_InsertAndGetWiderMatch (
     }  /* while ((matchIndex>=lowestMatchIndex) && (nbAttempts)) */
 
     if ( dict == usingDictCtxHc
-      && nbAttempts > 0
-      && ipIndex - lowestMatchIndex < LZ4_DISTANCE_MAX) {
+            && nbAttempts > 0
+            && ipIndex - lowestMatchIndex < LZ4_DISTANCE_MAX) {
         size_t const dictEndOffset = (size_t)(dictCtx->end - dictCtx->base);
         U32 dictMatchIndex = dictCtx->hashTable[LZ4HC_hashPtr(ip)];
         assert(dictEndOffset <= 1 GB);
@@ -432,12 +456,15 @@ LZ4HC_InsertAndGetWiderMatch (
                     longest = mlt;
                     *matchpos = base + matchIndex + back;
                     *startpos = ip + back;
-            }   }
+                }
+            }
 
             {   U32 const nextOffset = DELTANEXTU16(dictCtx->chainTable, dictMatchIndex);
                 dictMatchIndex -= nextOffset;
                 matchIndex -= nextOffset;
-    }   }   }
+            }
+        }
+    }
 
     return longest;
 }
@@ -487,9 +514,9 @@ LZ4_FORCE_INLINE int LZ4HC_encodeSequence (
     if (start==NULL) start = anchor;  /* only works for single segment */
     /* g_debuglog_enable = (pos >= 2228) & (pos <= 2262); */
     DEBUGLOG(6, "pos:%7u -- literals:%4u, match:%4i, offset:%5u, cost:%4u + %5u",
-                pos,
-                (U32)(ip - anchor), matchLength, (U32)(ip-match),
-                cost, totalCost);
+             pos,
+             (U32)(ip - anchor), matchLength, (U32)(ip-match),
+             cost, totalCost);
     totalCost += cost;
 #endif
 
@@ -499,7 +526,7 @@ LZ4_FORCE_INLINE int LZ4HC_encodeSequence (
     /* Check output limit */
     if (limit && ((op + (length / 255) + length + (2 + 1 + LASTLITERALS)) > oend)) {
         DEBUGLOG(6, "Not enough room to write %i literals (%i bytes remaining)",
-                (int)length, (int)(oend - op));
+                 (int)length, (int)(oend - op));
         return 1;
     }
     if (length >= RUN_MASK) {
@@ -517,7 +544,8 @@ LZ4_FORCE_INLINE int LZ4HC_encodeSequence (
 
     /* Encode Offset */
     assert( (ip - match) <= LZ4_DISTANCE_MAX );   /* note : consider providing offset as a value, rather than as a pointer difference */
-    LZ4_writeLE16(op, (U16)(ip - match)); op += 2;
+    LZ4_writeLE16(op, (U16)(ip - match));
+    op += 2;
 
     /* Encode MatchLength */
     assert(matchLength >= MINMATCH);
@@ -529,8 +557,14 @@ LZ4_FORCE_INLINE int LZ4HC_encodeSequence (
     if (length >= ML_MASK) {
         *token += ML_MASK;
         length -= ML_MASK;
-        for(; length >= 510 ; length -= 510) { *op++ = 255; *op++ = 255; }
-        if (length >= 255) { length -= 255; *op++ = 255; }
+        for(; length >= 510 ; length -= 510) {
+            *op++ = 255;
+            *op++ = 255;
+        }
+        if (length >= 255) {
+            length -= 255;
+            *op++ = 255;
+        }
         *op++ = (BYTE)length;
     } else {
         *token += (BYTE)(length);
@@ -555,7 +589,7 @@ LZ4_FORCE_INLINE int LZ4HC_compress_hashChain (
     int maxNbAttempts,
     const limitedOutput_directive limit,
     const dictCtx_directive dict
-    )
+)
 {
     const int inputSize = *srcSizePtr;
     const int patternAnalysis = (maxNbAttempts > 128);   /* levels 9+ */
@@ -587,16 +621,21 @@ LZ4_FORCE_INLINE int LZ4HC_compress_hashChain (
     /* Main Loop */
     while (ip <= mflimit) {
         ml = LZ4HC_InsertAndFindBestMatch(ctx, ip, matchlimit, &ref, maxNbAttempts, patternAnalysis, dict);
-        if (ml<MINMATCH) { ip++; continue; }
+        if (ml<MINMATCH) {
+            ip++;
+            continue;
+        }
 
         /* saved, in case we would skip too much */
-        start0 = ip; ref0 = ref; ml0 = ml;
+        start0 = ip;
+        ref0 = ref;
+        ml0 = ml;
 
 _Search2:
         if (ip+ml <= mflimit) {
             ml2 = LZ4HC_InsertAndGetWiderMatch(ctx,
-                            ip + ml - 2, ip + 0, matchlimit, ml, &ref2, &start2,
-                            maxNbAttempts, patternAnalysis, 0, dict, favorCompressionRatio);
+                                               ip + ml - 2, ip + 0, matchlimit, ml, &ref2, &start2,
+                                               maxNbAttempts, patternAnalysis, 0, dict, favorCompressionRatio);
         } else {
             ml2 = ml;
         }
@@ -609,8 +648,11 @@ _Search2:
 
         if (start0 < ip) {   /* first match was skipped at least once */
             if (start2 < ip + ml0) {  /* squeezing ML1 between ML0(original ML1) and ML2 */
-                ip = start0; ref = ref0; ml = ml0;  /* restore initial ML1 */
-        }   }
+                ip = start0;
+                ref = ref0;
+                ml = ml0;  /* restore initial ML1 */
+            }
+        }
 
         /* Here, start0==ip */
         if ((start2 - ip) < 3) {  /* First Match too small : removed */
@@ -640,8 +682,8 @@ _Search3:
 
         if (start2 + ml2 <= mflimit) {
             ml3 = LZ4HC_InsertAndGetWiderMatch(ctx,
-                            start2 + ml2 - 3, start2, matchlimit, ml2, &ref3, &start3,
-                            maxNbAttempts, patternAnalysis, 0, dict, favorCompressionRatio);
+                                               start2 + ml2 - 3, start2, matchlimit, ml2, &ref3, &start3,
+                                               maxNbAttempts, patternAnalysis, 0, dict, favorCompressionRatio);
         } else {
             ml3 = ml2;
         }
@@ -718,10 +760,14 @@ _Search3:
         if (LZ4HC_encodeSequence(UPDATABLE(ip, op, anchor), ml, ref, limit, oend)) goto _dest_overflow;
 
         /* ML2 becomes ML1 */
-        ip = start2; ref = ref2; ml = ml2;
+        ip = start2;
+        ref = ref2;
+        ml = ml2;
 
         /* ML3 becomes ML2 */
-        start2 = start3; ref2 = ref3; ml2 = ml3;
+        start2 = start3;
+        ref2 = ref3;
+        ml2 = ml3;
 
         /* let's find a new ML3 */
         goto _Search3;
@@ -772,11 +818,13 @@ _dest_overflow:
             /* ll validated; now adjust match length */
             size_t const bytesLeftForMl = (size_t)(maxLitPos - (op+ll_totalCost));
             size_t const maxMlSize = MINMATCH + (ML_MASK-1) + (bytesLeftForMl * 255);
-            assert(maxMlSize < INT_MAX); assert(ml >= 0);
+            assert(maxMlSize < INT_MAX);
+            assert(ml >= 0);
             if ((size_t)ml > maxMlSize) ml = (int)maxMlSize;
             if ((oend + LASTLITERALS) - (op + ll_totalCost + 2) - 1 + ml >= MFLIMIT) {
                 LZ4HC_encodeSequence(UPDATABLE(ip, op, anchor), ml, ref, notLimited, oend);
-        }   }
+            }
+        }
         goto _last_literals;
     }
     /* compression failed */
@@ -785,12 +833,12 @@ _dest_overflow:
 
 
 static int LZ4HC_compress_optimal( LZ4HC_CCtx_internal* ctx,
-    const char* const source, char* dst,
-    int* srcSizePtr, int dstCapacity,
-    int const nbSearches, size_t sufficient_len,
-    const limitedOutput_directive limit, int const fullUpdate,
-    const dictCtx_directive dict,
-    const HCfavor_e favorDecSpeed);
+                                   const char* const source, char* dst,
+                                   int* srcSizePtr, int dstCapacity,
+                                   int const nbSearches, size_t sufficient_len,
+                                   const limitedOutput_directive limit, int const fullUpdate,
+                                   const dictCtx_directive dict,
+                                   const HCfavor_e favorDecSpeed);
 
 
 LZ4_FORCE_INLINE int LZ4HC_compress_generic_internal (
@@ -802,7 +850,7 @@ LZ4_FORCE_INLINE int LZ4HC_compress_generic_internal (
     int cLevel,
     const limitedOutput_directive limit,
     const dictCtx_directive dict
-    )
+)
 {
     typedef enum { lz4hc, lz4opt } lz4hc_strat_e;
     typedef struct {
@@ -827,7 +875,7 @@ LZ4_FORCE_INLINE int LZ4HC_compress_generic_internal (
     };
 
     DEBUGLOG(4, "LZ4HC_compress_generic(ctx=%p, src=%p, srcSize=%d, limit=%d)",
-                ctx, src, *srcSizePtr, limit);
+             ctx, src, *srcSizePtr, limit);
 
     if (limit == fillOutput && dstCapacity < 1) return 0;   /* Impossible to store anything */
     if ((U32)*srcSizePtr > (U32)LZ4_MAX_INPUT_SIZE) return 0;    /* Unsupported input size (too large or negative) */
@@ -841,15 +889,15 @@ LZ4_FORCE_INLINE int LZ4HC_compress_generic_internal (
 
         if (cParam.strat == lz4hc) {
             result = LZ4HC_compress_hashChain(ctx,
-                                src, dst, srcSizePtr, dstCapacity,
-                                cParam.nbSearches, limit, dict);
+                                              src, dst, srcSizePtr, dstCapacity,
+                                              cParam.nbSearches, limit, dict);
         } else {
             assert(cParam.strat == lz4opt);
             result = LZ4HC_compress_optimal(ctx,
-                                src, dst, srcSizePtr, dstCapacity,
-                                cParam.nbSearches, cParam.targetLength, limit,
-                                cLevel == LZ4HC_CLEVEL_MAX,   /* ultra mode */
-                                dict, favor);
+                                            src, dst, srcSizePtr, dstCapacity,
+                                            cParam.nbSearches, cParam.targetLength, limit,
+                                            cLevel == LZ4HC_CLEVEL_MAX,   /* ultra mode */
+                                            dict, favor);
         }
         if (result <= 0) ctx->dirty = 1;
         return result;
@@ -860,14 +908,14 @@ static void LZ4HC_setExternalDict(LZ4HC_CCtx_internal* ctxPtr, const BYTE* newBl
 
 static int
 LZ4HC_compress_generic_noDictCtx (
-        LZ4HC_CCtx_internal* const ctx,
-        const char* const src,
-        char* const dst,
-        int* const srcSizePtr,
-        int const dstCapacity,
-        int cLevel,
-        limitedOutput_directive limit
-        )
+    LZ4HC_CCtx_internal* const ctx,
+    const char* const src,
+    char* const dst,
+    int* const srcSizePtr,
+    int const dstCapacity,
+    int cLevel,
+    limitedOutput_directive limit
+)
 {
     assert(ctx->dictCtx == NULL);
     return LZ4HC_compress_generic_internal(ctx, src, dst, srcSizePtr, dstCapacity, cLevel, limit, noDictCtx);
@@ -875,14 +923,14 @@ LZ4HC_compress_generic_noDictCtx (
 
 static int
 LZ4HC_compress_generic_dictCtx (
-        LZ4HC_CCtx_internal* const ctx,
-        const char* const src,
-        char* const dst,
-        int* const srcSizePtr,
-        int const dstCapacity,
-        int cLevel,
-        limitedOutput_directive limit
-        )
+    LZ4HC_CCtx_internal* const ctx,
+    const char* const src,
+    char* const dst,
+    int* const srcSizePtr,
+    int const dstCapacity,
+    int cLevel,
+    limitedOutput_directive limit
+)
 {
     const size_t position = (size_t)(ctx->end - ctx->base) - ctx->lowLimit;
     assert(ctx->dictCtx != NULL);
@@ -901,14 +949,14 @@ LZ4HC_compress_generic_dictCtx (
 
 static int
 LZ4HC_compress_generic (
-        LZ4HC_CCtx_internal* const ctx,
-        const char* const src,
-        char* const dst,
-        int* const srcSizePtr,
-        int const dstCapacity,
-        int cLevel,
-        limitedOutput_directive limit
-        )
+    LZ4HC_CCtx_internal* const ctx,
+    const char* const src,
+    char* const dst,
+    int* const srcSizePtr,
+    int const dstCapacity,
+    int cLevel,
+    limitedOutput_directive limit
+)
 {
     if (ctx->dictCtx == NULL) {
         return LZ4HC_compress_generic_noDictCtx(ctx, src, dst, srcSizePtr, dstCapacity, cLevel, limit);
@@ -918,12 +966,17 @@ LZ4HC_compress_generic (
 }
 
 
-int LZ4_sizeofStateHC(void) { return (int)sizeof(LZ4_streamHC_t); }
+int LZ4_sizeofStateHC(void) {
+    return (int)sizeof(LZ4_streamHC_t);
+}
 
 static size_t LZ4_streamHC_t_alignment(void)
 {
 #if LZ4_ALIGN_TEST
-    typedef struct { char c; LZ4_streamHC_t t; } t_a;
+    typedef struct {
+        char c;
+        LZ4_streamHC_t t;
+    } t_a;
     return sizeof(t_a) - sizeof(LZ4_streamHC_t);
 #else
     return 1;  /* effectively disabled */
@@ -1011,8 +1064,9 @@ LZ4_streamHC_t* LZ4_initStreamHC (void* buffer, size_t size)
     if (size < sizeof(LZ4_streamHC_t)) return NULL;
     if (!LZ4_isAligned(buffer, LZ4_streamHC_t_alignment())) return NULL;
     /* init */
-    { LZ4HC_CCtx_internal* const hcstate = &(LZ4_streamHCPtr->internal_donotuse);
-      MEM_INIT(hcstate, 0, sizeof(*hcstate)); }
+    {   LZ4HC_CCtx_internal* const hcstate = &(LZ4_streamHCPtr->internal_donotuse);
+        MEM_INIT(hcstate, 0, sizeof(*hcstate));
+    }
     LZ4_setCompressionLevel(LZ4_streamHCPtr, LZ4HC_CLEVEL_DEFAULT);
     return LZ4_streamHCPtr;
 }
@@ -1058,7 +1112,7 @@ void LZ4_favorDecompressionSpeed(LZ4_streamHC_t* LZ4_streamHCPtr, int favor)
 /* LZ4_loadDictHC() :
  * LZ4_streamHCPtr is presumed properly initialized */
 int LZ4_loadDictHC (LZ4_streamHC_t* LZ4_streamHCPtr,
-              const char* dictionary, int dictSize)
+                    const char* dictionary, int dictSize)
 {
     LZ4HC_CCtx_internal* const ctxPtr = &LZ4_streamHCPtr->internal_donotuse;
     DEBUGLOG(4, "LZ4_loadDictHC(ctx:%p, dict:%p, dictSize:%d)", LZ4_streamHCPtr, dictionary, dictSize);
@@ -1110,7 +1164,7 @@ LZ4_compressHC_continue_generic (LZ4_streamHC_t* LZ4_streamHCPtr,
 {
     LZ4HC_CCtx_internal* const ctxPtr = &LZ4_streamHCPtr->internal_donotuse;
     DEBUGLOG(5, "LZ4_compressHC_continue_generic(ctx=%p, src=%p, srcSize=%d, limit=%d)",
-                LZ4_streamHCPtr, src, *srcSizePtr, limit);
+             LZ4_streamHCPtr, src, *srcSizePtr, limit);
     assert(ctxPtr != NULL);
     /* auto-init if forgotten */
     if (ctxPtr->base == NULL) LZ4HC_init_internal (ctxPtr, (const BYTE*) src);
@@ -1134,7 +1188,8 @@ LZ4_compressHC_continue_generic (LZ4_streamHC_t* LZ4_streamHCPtr,
             if (sourceEnd > dictEnd) sourceEnd = dictEnd;
             ctxPtr->lowLimit = (U32)(sourceEnd - ctxPtr->dictBase);
             if (ctxPtr->dictLimit - ctxPtr->lowLimit < 4) ctxPtr->lowLimit = ctxPtr->dictLimit;
-    }   }
+        }
+    }
 
     return LZ4HC_compress_generic (ctxPtr, src, dst, srcSizePtr, dstCapacity, ctxPtr->compressionLevel, limit);
 }
@@ -1190,20 +1245,42 @@ int LZ4_saveDictHC (LZ4_streamHC_t* LZ4_streamHCPtr, char* safeBuffer, int dictS
 /* These functions currently generate deprecation warnings */
 
 /* Wrappers for deprecated compression functions */
-int LZ4_compressHC(const char* src, char* dst, int srcSize) { return LZ4_compress_HC (src, dst, srcSize, LZ4_compressBound(srcSize), 0); }
-int LZ4_compressHC_limitedOutput(const char* src, char* dst, int srcSize, int maxDstSize) { return LZ4_compress_HC(src, dst, srcSize, maxDstSize, 0); }
-int LZ4_compressHC2(const char* src, char* dst, int srcSize, int cLevel) { return LZ4_compress_HC (src, dst, srcSize, LZ4_compressBound(srcSize), cLevel); }
-int LZ4_compressHC2_limitedOutput(const char* src, char* dst, int srcSize, int maxDstSize, int cLevel) { return LZ4_compress_HC(src, dst, srcSize, maxDstSize, cLevel); }
-int LZ4_compressHC_withStateHC (void* state, const char* src, char* dst, int srcSize) { return LZ4_compress_HC_extStateHC (state, src, dst, srcSize, LZ4_compressBound(srcSize), 0); }
-int LZ4_compressHC_limitedOutput_withStateHC (void* state, const char* src, char* dst, int srcSize, int maxDstSize) { return LZ4_compress_HC_extStateHC (state, src, dst, srcSize, maxDstSize, 0); }
-int LZ4_compressHC2_withStateHC (void* state, const char* src, char* dst, int srcSize, int cLevel) { return LZ4_compress_HC_extStateHC(state, src, dst, srcSize, LZ4_compressBound(srcSize), cLevel); }
-int LZ4_compressHC2_limitedOutput_withStateHC (void* state, const char* src, char* dst, int srcSize, int maxDstSize, int cLevel) { return LZ4_compress_HC_extStateHC(state, src, dst, srcSize, maxDstSize, cLevel); }
-int LZ4_compressHC_continue (LZ4_streamHC_t* ctx, const char* src, char* dst, int srcSize) { return LZ4_compress_HC_continue (ctx, src, dst, srcSize, LZ4_compressBound(srcSize)); }
-int LZ4_compressHC_limitedOutput_continue (LZ4_streamHC_t* ctx, const char* src, char* dst, int srcSize, int maxDstSize) { return LZ4_compress_HC_continue (ctx, src, dst, srcSize, maxDstSize); }
+int LZ4_compressHC(const char* src, char* dst, int srcSize) {
+    return LZ4_compress_HC (src, dst, srcSize, LZ4_compressBound(srcSize), 0);
+}
+int LZ4_compressHC_limitedOutput(const char* src, char* dst, int srcSize, int maxDstSize) {
+    return LZ4_compress_HC(src, dst, srcSize, maxDstSize, 0);
+}
+int LZ4_compressHC2(const char* src, char* dst, int srcSize, int cLevel) {
+    return LZ4_compress_HC (src, dst, srcSize, LZ4_compressBound(srcSize), cLevel);
+}
+int LZ4_compressHC2_limitedOutput(const char* src, char* dst, int srcSize, int maxDstSize, int cLevel) {
+    return LZ4_compress_HC(src, dst, srcSize, maxDstSize, cLevel);
+}
+int LZ4_compressHC_withStateHC (void* state, const char* src, char* dst, int srcSize) {
+    return LZ4_compress_HC_extStateHC (state, src, dst, srcSize, LZ4_compressBound(srcSize), 0);
+}
+int LZ4_compressHC_limitedOutput_withStateHC (void* state, const char* src, char* dst, int srcSize, int maxDstSize) {
+    return LZ4_compress_HC_extStateHC (state, src, dst, srcSize, maxDstSize, 0);
+}
+int LZ4_compressHC2_withStateHC (void* state, const char* src, char* dst, int srcSize, int cLevel) {
+    return LZ4_compress_HC_extStateHC(state, src, dst, srcSize, LZ4_compressBound(srcSize), cLevel);
+}
+int LZ4_compressHC2_limitedOutput_withStateHC (void* state, const char* src, char* dst, int srcSize, int maxDstSize, int cLevel) {
+    return LZ4_compress_HC_extStateHC(state, src, dst, srcSize, maxDstSize, cLevel);
+}
+int LZ4_compressHC_continue (LZ4_streamHC_t* ctx, const char* src, char* dst, int srcSize) {
+    return LZ4_compress_HC_continue (ctx, src, dst, srcSize, LZ4_compressBound(srcSize));
+}
+int LZ4_compressHC_limitedOutput_continue (LZ4_streamHC_t* ctx, const char* src, char* dst, int srcSize, int maxDstSize) {
+    return LZ4_compress_HC_continue (ctx, src, dst, srcSize, maxDstSize);
+}
 
 
 /* Deprecated streaming functions */
-int LZ4_sizeofStreamStateHC(void) { return LZ4_STREAMHCSIZE; }
+int LZ4_sizeofStreamStateHC(void) {
+    return LZ4_STREAMHCSIZE;
+}
 
 /* state is presumed correctly sized, aka >= sizeof(LZ4_streamHC_t)
  * @return : 0 on success, !=0 if error */
@@ -1299,7 +1376,7 @@ LZ4HC_FindLongerMatch(LZ4HC_CCtx_internal* const ctx,
                       const dictCtx_directive dict,
                       const HCfavor_e favorDecSpeed)
 {
-    LZ4HC_match_t match = { 0 , 0 };
+    LZ4HC_match_t match = { 0, 0 };
     const BYTE* matchPtr = NULL;
     /* note : LZ4HC_InsertAndGetWiderMatch() is able to modify the starting position of a match (*startpos),
      * but this won't be the case here, as we define iLowLimit==ip,
@@ -1357,263 +1434,283 @@ static int LZ4HC_compress_optimal ( LZ4HC_CCtx_internal* ctx,
 
     /* Main Loop */
     while (ip <= mflimit) {
-         int const llen = (int)(ip - anchor);
-         int best_mlen, best_off;
-         int cur, last_match_pos = 0;
+        int const llen = (int)(ip - anchor);
+        int best_mlen, best_off;
+        int cur, last_match_pos = 0;
 
-         LZ4HC_match_t const firstMatch = LZ4HC_FindLongerMatch(ctx, ip, matchlimit, MINMATCH-1, nbSearches, dict, favorDecSpeed);
-         if (firstMatch.len==0) { ip++; continue; }
+        LZ4HC_match_t const firstMatch = LZ4HC_FindLongerMatch(ctx, ip, matchlimit, MINMATCH-1, nbSearches, dict, favorDecSpeed);
+        if (firstMatch.len==0) {
+            ip++;
+            continue;
+        }
 
-         if ((size_t)firstMatch.len > sufficient_len) {
-             /* good enough solution : immediate encoding */
-             int const firstML = firstMatch.len;
-             const BYTE* const matchPos = ip - firstMatch.off;
-             opSaved = op;
-             if ( LZ4HC_encodeSequence(UPDATABLE(ip, op, anchor), firstML, matchPos, limit, oend) ) {  /* updates ip, op and anchor */
-                 ovml = firstML;
-                 ovref = matchPos;
-                 goto _dest_overflow;
-             }
-             continue;
-         }
+        if ((size_t)firstMatch.len > sufficient_len) {
+            /* good enough solution : immediate encoding */
+            int const firstML = firstMatch.len;
+            const BYTE* const matchPos = ip - firstMatch.off;
+            opSaved = op;
+            if ( LZ4HC_encodeSequence(UPDATABLE(ip, op, anchor), firstML, matchPos, limit, oend) ) {  /* updates ip, op and anchor */
+                ovml = firstML;
+                ovref = matchPos;
+                goto _dest_overflow;
+            }
+            continue;
+        }
 
-         /* set prices for first positions (literals) */
-         {   int rPos;
-             for (rPos = 0 ; rPos < MINMATCH ; rPos++) {
-                 int const cost = LZ4HC_literalsPrice(llen + rPos);
-                 opt[rPos].mlen = 1;
-                 opt[rPos].off = 0;
-                 opt[rPos].litlen = llen + rPos;
-                 opt[rPos].price = cost;
-                 DEBUGLOG(7, "rPos:%3i => price:%3i (litlen=%i) -- initial setup",
-                             rPos, cost, opt[rPos].litlen);
-         }   }
-         /* set prices using initial match */
-         {   int mlen = MINMATCH;
-             int const matchML = firstMatch.len;   /* necessarily < sufficient_len < LZ4_OPT_NUM */
-             int const offset = firstMatch.off;
-             assert(matchML < LZ4_OPT_NUM);
-             for ( ; mlen <= matchML ; mlen++) {
-                 int const cost = LZ4HC_sequencePrice(llen, mlen);
-                 opt[mlen].mlen = mlen;
-                 opt[mlen].off = offset;
-                 opt[mlen].litlen = llen;
-                 opt[mlen].price = cost;
-                 DEBUGLOG(7, "rPos:%3i => price:%3i (matchlen=%i) -- initial setup",
-                             mlen, cost, mlen);
-         }   }
-         last_match_pos = firstMatch.len;
-         {   int addLit;
-             for (addLit = 1; addLit <= TRAILING_LITERALS; addLit ++) {
-                 opt[last_match_pos+addLit].mlen = 1; /* literal */
-                 opt[last_match_pos+addLit].off = 0;
-                 opt[last_match_pos+addLit].litlen = addLit;
-                 opt[last_match_pos+addLit].price = opt[last_match_pos].price + LZ4HC_literalsPrice(addLit);
-                 DEBUGLOG(7, "rPos:%3i => price:%3i (litlen=%i) -- initial setup",
-                             last_match_pos+addLit, opt[last_match_pos+addLit].price, addLit);
-         }   }
+        /* set prices for first positions (literals) */
+        {   int rPos;
+            for (rPos = 0 ; rPos < MINMATCH ; rPos++) {
+                int const cost = LZ4HC_literalsPrice(llen + rPos);
+                opt[rPos].mlen = 1;
+                opt[rPos].off = 0;
+                opt[rPos].litlen = llen + rPos;
+                opt[rPos].price = cost;
+                DEBUGLOG(7, "rPos:%3i => price:%3i (litlen=%i) -- initial setup",
+                         rPos, cost, opt[rPos].litlen);
+            }
+        }
+        /* set prices using initial match */
+        {   int mlen = MINMATCH;
+            int const matchML = firstMatch.len;   /* necessarily < sufficient_len < LZ4_OPT_NUM */
+            int const offset = firstMatch.off;
+            assert(matchML < LZ4_OPT_NUM);
+            for ( ; mlen <= matchML ; mlen++) {
+                int const cost = LZ4HC_sequencePrice(llen, mlen);
+                opt[mlen].mlen = mlen;
+                opt[mlen].off = offset;
+                opt[mlen].litlen = llen;
+                opt[mlen].price = cost;
+                DEBUGLOG(7, "rPos:%3i => price:%3i (matchlen=%i) -- initial setup",
+                         mlen, cost, mlen);
+            }
+        }
+        last_match_pos = firstMatch.len;
+        {   int addLit;
+            for (addLit = 1; addLit <= TRAILING_LITERALS; addLit ++) {
+                opt[last_match_pos+addLit].mlen = 1; /* literal */
+                opt[last_match_pos+addLit].off = 0;
+                opt[last_match_pos+addLit].litlen = addLit;
+                opt[last_match_pos+addLit].price = opt[last_match_pos].price + LZ4HC_literalsPrice(addLit);
+                DEBUGLOG(7, "rPos:%3i => price:%3i (litlen=%i) -- initial setup",
+                         last_match_pos+addLit, opt[last_match_pos+addLit].price, addLit);
+            }
+        }
 
-         /* check further positions */
-         for (cur = 1; cur < last_match_pos; cur++) {
-             const BYTE* const curPtr = ip + cur;
-             LZ4HC_match_t newMatch;
+        /* check further positions */
+        for (cur = 1; cur < last_match_pos; cur++) {
+            const BYTE* const curPtr = ip + cur;
+            LZ4HC_match_t newMatch;
 
-             if (curPtr > mflimit) break;
-             DEBUGLOG(7, "rPos:%u[%u] vs [%u]%u",
+            if (curPtr > mflimit) break;
+            DEBUGLOG(7, "rPos:%u[%u] vs [%u]%u",
                      cur, opt[cur].price, opt[cur+1].price, cur+1);
-             if (fullUpdate) {
-                 /* not useful to search here if next position has same (or lower) cost */
-                 if ( (opt[cur+1].price <= opt[cur].price)
-                   /* in some cases, next position has same cost, but cost rises sharply after, so a small match would still be beneficial */
-                   && (opt[cur+MINMATCH].price < opt[cur].price + 3/*min seq price*/) )
-                     continue;
-             } else {
-                 /* not useful to search here if next position has same (or lower) cost */
-                 if (opt[cur+1].price <= opt[cur].price) continue;
-             }
+            if (fullUpdate) {
+                /* not useful to search here if next position has same (or lower) cost */
+                if ( (opt[cur+1].price <= opt[cur].price)
+                        /* in some cases, next position has same cost, but cost rises sharply after, so a small match would still be beneficial */
+                        && (opt[cur+MINMATCH].price < opt[cur].price + 3/*min seq price*/) )
+                    continue;
+            } else {
+                /* not useful to search here if next position has same (or lower) cost */
+                if (opt[cur+1].price <= opt[cur].price) continue;
+            }
 
-             DEBUGLOG(7, "search at rPos:%u", cur);
-             if (fullUpdate)
-                 newMatch = LZ4HC_FindLongerMatch(ctx, curPtr, matchlimit, MINMATCH-1, nbSearches, dict, favorDecSpeed);
-             else
-                 /* only test matches of minimum length; slightly faster, but misses a few bytes */
-                 newMatch = LZ4HC_FindLongerMatch(ctx, curPtr, matchlimit, last_match_pos - cur, nbSearches, dict, favorDecSpeed);
-             if (!newMatch.len) continue;
+            DEBUGLOG(7, "search at rPos:%u", cur);
+            if (fullUpdate)
+                newMatch = LZ4HC_FindLongerMatch(ctx, curPtr, matchlimit, MINMATCH-1, nbSearches, dict, favorDecSpeed);
+            else
+                /* only test matches of minimum length; slightly faster, but misses a few bytes */
+                newMatch = LZ4HC_FindLongerMatch(ctx, curPtr, matchlimit, last_match_pos - cur, nbSearches, dict, favorDecSpeed);
+            if (!newMatch.len) continue;
 
-             if ( ((size_t)newMatch.len > sufficient_len)
-               || (newMatch.len + cur >= LZ4_OPT_NUM) ) {
-                 /* immediate encoding */
-                 best_mlen = newMatch.len;
-                 best_off = newMatch.off;
-                 last_match_pos = cur + 1;
-                 goto encode;
-             }
+            if ( ((size_t)newMatch.len > sufficient_len)
+                    || (newMatch.len + cur >= LZ4_OPT_NUM) ) {
+                /* immediate encoding */
+                best_mlen = newMatch.len;
+                best_off = newMatch.off;
+                last_match_pos = cur + 1;
+                goto encode;
+            }
 
-             /* before match : set price with literals at beginning */
-             {   int const baseLitlen = opt[cur].litlen;
-                 int litlen;
-                 for (litlen = 1; litlen < MINMATCH; litlen++) {
-                     int const price = opt[cur].price - LZ4HC_literalsPrice(baseLitlen) + LZ4HC_literalsPrice(baseLitlen+litlen);
-                     int const pos = cur + litlen;
-                     if (price < opt[pos].price) {
-                         opt[pos].mlen = 1; /* literal */
-                         opt[pos].off = 0;
-                         opt[pos].litlen = baseLitlen+litlen;
-                         opt[pos].price = price;
-                         DEBUGLOG(7, "rPos:%3i => price:%3i (litlen=%i)",
-                                     pos, price, opt[pos].litlen);
-             }   }   }
+            /* before match : set price with literals at beginning */
+            {   int const baseLitlen = opt[cur].litlen;
+                int litlen;
+                for (litlen = 1; litlen < MINMATCH; litlen++) {
+                    int const price = opt[cur].price - LZ4HC_literalsPrice(baseLitlen) + LZ4HC_literalsPrice(baseLitlen+litlen);
+                    int const pos = cur + litlen;
+                    if (price < opt[pos].price) {
+                        opt[pos].mlen = 1; /* literal */
+                        opt[pos].off = 0;
+                        opt[pos].litlen = baseLitlen+litlen;
+                        opt[pos].price = price;
+                        DEBUGLOG(7, "rPos:%3i => price:%3i (litlen=%i)",
+                                 pos, price, opt[pos].litlen);
+                    }
+                }
+            }
 
-             /* set prices using match at position = cur */
-             {   int const matchML = newMatch.len;
-                 int ml = MINMATCH;
+            /* set prices using match at position = cur */
+            {   int const matchML = newMatch.len;
+                int ml = MINMATCH;
 
-                 assert(cur + newMatch.len < LZ4_OPT_NUM);
-                 for ( ; ml <= matchML ; ml++) {
-                     int const pos = cur + ml;
-                     int const offset = newMatch.off;
-                     int price;
-                     int ll;
-                     DEBUGLOG(7, "testing price rPos %i (last_match_pos=%i)",
-                                 pos, last_match_pos);
-                     if (opt[cur].mlen == 1) {
-                         ll = opt[cur].litlen;
-                         price = ((cur > ll) ? opt[cur - ll].price : 0)
-                               + LZ4HC_sequencePrice(ll, ml);
-                     } else {
-                         ll = 0;
-                         price = opt[cur].price + LZ4HC_sequencePrice(0, ml);
-                     }
+                assert(cur + newMatch.len < LZ4_OPT_NUM);
+                for ( ; ml <= matchML ; ml++) {
+                    int const pos = cur + ml;
+                    int const offset = newMatch.off;
+                    int price;
+                    int ll;
+                    DEBUGLOG(7, "testing price rPos %i (last_match_pos=%i)",
+                             pos, last_match_pos);
+                    if (opt[cur].mlen == 1) {
+                        ll = opt[cur].litlen;
+                        price = ((cur > ll) ? opt[cur - ll].price : 0)
+                                + LZ4HC_sequencePrice(ll, ml);
+                    } else {
+                        ll = 0;
+                        price = opt[cur].price + LZ4HC_sequencePrice(0, ml);
+                    }
 
                     assert((U32)favorDecSpeed <= 1);
-                     if (pos > last_match_pos+TRAILING_LITERALS
-                      || price <= opt[pos].price - (int)favorDecSpeed) {
-                         DEBUGLOG(7, "rPos:%3i => price:%3i (matchlen=%i)",
-                                     pos, price, ml);
-                         assert(pos < LZ4_OPT_NUM);
-                         if ( (ml == matchML)  /* last pos of last match */
-                           && (last_match_pos < pos) )
-                             last_match_pos = pos;
-                         opt[pos].mlen = ml;
-                         opt[pos].off = offset;
-                         opt[pos].litlen = ll;
-                         opt[pos].price = price;
-             }   }   }
-             /* complete following positions with literals */
-             {   int addLit;
-                 for (addLit = 1; addLit <= TRAILING_LITERALS; addLit ++) {
-                     opt[last_match_pos+addLit].mlen = 1; /* literal */
-                     opt[last_match_pos+addLit].off = 0;
-                     opt[last_match_pos+addLit].litlen = addLit;
-                     opt[last_match_pos+addLit].price = opt[last_match_pos].price + LZ4HC_literalsPrice(addLit);
-                     DEBUGLOG(7, "rPos:%3i => price:%3i (litlen=%i)", last_match_pos+addLit, opt[last_match_pos+addLit].price, addLit);
-             }   }
-         }  /* for (cur = 1; cur <= last_match_pos; cur++) */
+                    if (pos > last_match_pos+TRAILING_LITERALS
+                            || price <= opt[pos].price - (int)favorDecSpeed) {
+                        DEBUGLOG(7, "rPos:%3i => price:%3i (matchlen=%i)",
+                                 pos, price, ml);
+                        assert(pos < LZ4_OPT_NUM);
+                        if ( (ml == matchML)  /* last pos of last match */
+                                && (last_match_pos < pos) )
+                            last_match_pos = pos;
+                        opt[pos].mlen = ml;
+                        opt[pos].off = offset;
+                        opt[pos].litlen = ll;
+                        opt[pos].price = price;
+                    }
+                }
+            }
+            /* complete following positions with literals */
+            {   int addLit;
+                for (addLit = 1; addLit <= TRAILING_LITERALS; addLit ++) {
+                    opt[last_match_pos+addLit].mlen = 1; /* literal */
+                    opt[last_match_pos+addLit].off = 0;
+                    opt[last_match_pos+addLit].litlen = addLit;
+                    opt[last_match_pos+addLit].price = opt[last_match_pos].price + LZ4HC_literalsPrice(addLit);
+                    DEBUGLOG(7, "rPos:%3i => price:%3i (litlen=%i)", last_match_pos+addLit, opt[last_match_pos+addLit].price, addLit);
+                }
+            }
+        }  /* for (cur = 1; cur <= last_match_pos; cur++) */
 
-         assert(last_match_pos < LZ4_OPT_NUM + TRAILING_LITERALS);
-         best_mlen = opt[last_match_pos].mlen;
-         best_off = opt[last_match_pos].off;
-         cur = last_match_pos - best_mlen;
+        assert(last_match_pos < LZ4_OPT_NUM + TRAILING_LITERALS);
+        best_mlen = opt[last_match_pos].mlen;
+        best_off = opt[last_match_pos].off;
+        cur = last_match_pos - best_mlen;
 
 encode: /* cur, last_match_pos, best_mlen, best_off must be set */
-         assert(cur < LZ4_OPT_NUM);
-         assert(last_match_pos >= 1);  /* == 1 when only one candidate */
-         DEBUGLOG(6, "reverse traversal, looking for shortest path (last_match_pos=%i)", last_match_pos);
-         {   int candidate_pos = cur;
-             int selected_matchLength = best_mlen;
-             int selected_offset = best_off;
-             while (1) {  /* from end to beginning */
-                 int const next_matchLength = opt[candidate_pos].mlen;  /* can be 1, means literal */
-                 int const next_offset = opt[candidate_pos].off;
-                 DEBUGLOG(7, "pos %i: sequence length %i", candidate_pos, selected_matchLength);
-                 opt[candidate_pos].mlen = selected_matchLength;
-                 opt[candidate_pos].off = selected_offset;
-                 selected_matchLength = next_matchLength;
-                 selected_offset = next_offset;
-                 if (next_matchLength > candidate_pos) break; /* last match elected, first match to encode */
-                 assert(next_matchLength > 0);  /* can be 1, means literal */
-                 candidate_pos -= next_matchLength;
-         }   }
+        assert(cur < LZ4_OPT_NUM);
+        assert(last_match_pos >= 1);  /* == 1 when only one candidate */
+        DEBUGLOG(6, "reverse traversal, looking for shortest path (last_match_pos=%i)", last_match_pos);
+        {   int candidate_pos = cur;
+            int selected_matchLength = best_mlen;
+            int selected_offset = best_off;
+            while (1) {  /* from end to beginning */
+                int const next_matchLength = opt[candidate_pos].mlen;  /* can be 1, means literal */
+                int const next_offset = opt[candidate_pos].off;
+                DEBUGLOG(7, "pos %i: sequence length %i", candidate_pos, selected_matchLength);
+                opt[candidate_pos].mlen = selected_matchLength;
+                opt[candidate_pos].off = selected_offset;
+                selected_matchLength = next_matchLength;
+                selected_offset = next_offset;
+                if (next_matchLength > candidate_pos) break; /* last match elected, first match to encode */
+                assert(next_matchLength > 0);  /* can be 1, means literal */
+                candidate_pos -= next_matchLength;
+            }
+        }
 
-         /* encode all recorded sequences in order */
-         {   int rPos = 0;  /* relative position (to ip) */
-             while (rPos < last_match_pos) {
-                 int const ml = opt[rPos].mlen;
-                 int const offset = opt[rPos].off;
-                 if (ml == 1) { ip++; rPos++; continue; }  /* literal; note: can end up with several literals, in which case, skip them */
-                 rPos += ml;
-                 assert(ml >= MINMATCH);
-                 assert((offset >= 1) && (offset <= LZ4_DISTANCE_MAX));
-                 opSaved = op;
-                 if ( LZ4HC_encodeSequence(UPDATABLE(ip, op, anchor), ml, ip - offset, limit, oend) ) {  /* updates ip, op and anchor */
-                     ovml = ml;
-                     ovref = ip - offset;
-                     goto _dest_overflow;
-         }   }   }
-     }  /* while (ip <= mflimit) */
+        /* encode all recorded sequences in order */
+        {   int rPos = 0;  /* relative position (to ip) */
+            while (rPos < last_match_pos) {
+                int const ml = opt[rPos].mlen;
+                int const offset = opt[rPos].off;
+                if (ml == 1) {
+                    ip++;    /* literal; note: can end up with several literals, in which case, skip them */
+                    rPos++;
+                    continue;
+                }
+                rPos += ml;
+                assert(ml >= MINMATCH);
+                assert((offset >= 1) && (offset <= LZ4_DISTANCE_MAX));
+                opSaved = op;
+                if ( LZ4HC_encodeSequence(UPDATABLE(ip, op, anchor), ml, ip - offset, limit, oend) ) {  /* updates ip, op and anchor */
+                    ovml = ml;
+                    ovref = ip - offset;
+                    goto _dest_overflow;
+                }
+            }
+        }
+    }  /* while (ip <= mflimit) */
 
 _last_literals:
-     /* Encode Last Literals */
-     {   size_t lastRunSize = (size_t)(iend - anchor);  /* literals */
-         size_t llAdd = (lastRunSize + 255 - RUN_MASK) / 255;
-         size_t const totalSize = 1 + llAdd + lastRunSize;
-         if (limit == fillOutput) oend += LASTLITERALS;  /* restore correct value */
-         if (limit && (op + totalSize > oend)) {
-             if (limit == limitedOutput) { /* Check output limit */
+    /* Encode Last Literals */
+    {   size_t lastRunSize = (size_t)(iend - anchor);  /* literals */
+        size_t llAdd = (lastRunSize + 255 - RUN_MASK) / 255;
+        size_t const totalSize = 1 + llAdd + lastRunSize;
+        if (limit == fillOutput) oend += LASTLITERALS;  /* restore correct value */
+        if (limit && (op + totalSize > oend)) {
+            if (limit == limitedOutput) { /* Check output limit */
                 retval = 0;
                 goto _return_label;
-             }
-             /* adapt lastRunSize to fill 'dst' */
-             lastRunSize  = (size_t)(oend - op) - 1 /*token*/;
-             llAdd = (lastRunSize + 256 - RUN_MASK) / 256;
-             lastRunSize -= llAdd;
-         }
-         DEBUGLOG(6, "Final literal run : %i literals", (int)lastRunSize);
-         ip = anchor + lastRunSize; /* can be != iend if limit==fillOutput */
+            }
+            /* adapt lastRunSize to fill 'dst' */
+            lastRunSize  = (size_t)(oend - op) - 1 /*token*/;
+            llAdd = (lastRunSize + 256 - RUN_MASK) / 256;
+            lastRunSize -= llAdd;
+        }
+        DEBUGLOG(6, "Final literal run : %i literals", (int)lastRunSize);
+        ip = anchor + lastRunSize; /* can be != iend if limit==fillOutput */
 
-         if (lastRunSize >= RUN_MASK) {
-             size_t accumulator = lastRunSize - RUN_MASK;
-             *op++ = (RUN_MASK << ML_BITS);
-             for(; accumulator >= 255 ; accumulator -= 255) *op++ = 255;
-             *op++ = (BYTE) accumulator;
-         } else {
-             *op++ = (BYTE)(lastRunSize << ML_BITS);
-         }
-         memcpy(op, anchor, lastRunSize);
-         op += lastRunSize;
-     }
+        if (lastRunSize >= RUN_MASK) {
+            size_t accumulator = lastRunSize - RUN_MASK;
+            *op++ = (RUN_MASK << ML_BITS);
+            for(; accumulator >= 255 ; accumulator -= 255) *op++ = 255;
+            *op++ = (BYTE) accumulator;
+        } else {
+            *op++ = (BYTE)(lastRunSize << ML_BITS);
+        }
+        memcpy(op, anchor, lastRunSize);
+        op += lastRunSize;
+    }
 
-     /* End */
-     *srcSizePtr = (int) (((const char*)ip) - source);
-     retval = (int) ((char*)op-dst);
-     goto _return_label;
+    /* End */
+    *srcSizePtr = (int) (((const char*)ip) - source);
+    retval = (int) ((char*)op-dst);
+    goto _return_label;
 
 _dest_overflow:
-if (limit == fillOutput) {
-     /* Assumption : ip, anchor, ovml and ovref must be set correctly */
-     size_t const ll = (size_t)(ip - anchor);
-     size_t const ll_addbytes = (ll + 240) / 255;
-     size_t const ll_totalCost = 1 + ll_addbytes + ll;
-     BYTE* const maxLitPos = oend - 3; /* 2 for offset, 1 for token */
-     DEBUGLOG(6, "Last sequence overflowing (only %i bytes remaining)", (int)(oend-1-opSaved));
-     op = opSaved;  /* restore correct out pointer */
-     if (op + ll_totalCost <= maxLitPos) {
-         /* ll validated; now adjust match length */
-         size_t const bytesLeftForMl = (size_t)(maxLitPos - (op+ll_totalCost));
-         size_t const maxMlSize = MINMATCH + (ML_MASK-1) + (bytesLeftForMl * 255);
-         assert(maxMlSize < INT_MAX); assert(ovml >= 0);
-         if ((size_t)ovml > maxMlSize) ovml = (int)maxMlSize;
-         if ((oend + LASTLITERALS) - (op + ll_totalCost + 2) - 1 + ovml >= MFLIMIT) {
-             DEBUGLOG(6, "Space to end : %i + ml (%i)", (int)((oend + LASTLITERALS) - (op + ll_totalCost + 2) - 1), ovml);
-             DEBUGLOG(6, "Before : ip = %p, anchor = %p", ip, anchor);
-             LZ4HC_encodeSequence(UPDATABLE(ip, op, anchor), ovml, ovref, notLimited, oend);
-             DEBUGLOG(6, "After : ip = %p, anchor = %p", ip, anchor);
-     }   }
-     goto _last_literals;
-}
+    if (limit == fillOutput) {
+        /* Assumption : ip, anchor, ovml and ovref must be set correctly */
+        size_t const ll = (size_t)(ip - anchor);
+        size_t const ll_addbytes = (ll + 240) / 255;
+        size_t const ll_totalCost = 1 + ll_addbytes + ll;
+        BYTE* const maxLitPos = oend - 3; /* 2 for offset, 1 for token */
+        DEBUGLOG(6, "Last sequence overflowing (only %i bytes remaining)", (int)(oend-1-opSaved));
+        op = opSaved;  /* restore correct out pointer */
+        if (op + ll_totalCost <= maxLitPos) {
+            /* ll validated; now adjust match length */
+            size_t const bytesLeftForMl = (size_t)(maxLitPos - (op+ll_totalCost));
+            size_t const maxMlSize = MINMATCH + (ML_MASK-1) + (bytesLeftForMl * 255);
+            assert(maxMlSize < INT_MAX);
+            assert(ovml >= 0);
+            if ((size_t)ovml > maxMlSize) ovml = (int)maxMlSize;
+            if ((oend + LASTLITERALS) - (op + ll_totalCost + 2) - 1 + ovml >= MFLIMIT) {
+                DEBUGLOG(6, "Space to end : %i + ml (%i)", (int)((oend + LASTLITERALS) - (op + ll_totalCost + 2) - 1), ovml);
+                DEBUGLOG(6, "Before : ip = %p, anchor = %p", ip, anchor);
+                LZ4HC_encodeSequence(UPDATABLE(ip, op, anchor), ovml, ovref, notLimited, oend);
+                DEBUGLOG(6, "After : ip = %p, anchor = %p", ip, anchor);
+            }
+        }
+        goto _last_literals;
+    }
 _return_label:
 #ifdef LZ4HC_HEAPMODE
-     FREEMEM(opt);
+    FREEMEM(opt);
 #endif
-     return retval;
+    return retval;
 }

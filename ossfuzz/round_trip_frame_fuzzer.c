@@ -29,7 +29,7 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
 
     /* Compression must succeed and round trip correctly. */
     size_t const dstSize =
-            LZ4F_compressFrame(dst, dstCapacity, data, size, &prefs);
+        LZ4F_compressFrame(dst, dstCapacity, data, size, &prefs);
     FUZZ_ASSERT(!LZ4F_isError(dstSize));
     size_t const rtSize = FUZZ_decompressFrame(rt, size, dst, dstSize);
     FUZZ_ASSERT_MSG(rtSize == size, "Incorrect regenerated size");

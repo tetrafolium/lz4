@@ -47,8 +47,8 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
         FUZZ_ASSERT(state);
         int compressedSize = size;
         int const dstSize = LZ4_compress_HC_destSize(state, (const char*)data,
-                                                     dst, &compressedSize,
-                                                     dstCapacity, level);
+                            dst, &compressedSize,
+                            dstCapacity, level);
         FUZZ_ASSERT(dstSize > 0);
         int const rtSize = LZ4_decompress_safe(dst, rt, dstSize, size);
         FUZZ_ASSERT_MSG(rtSize == compressedSize, "Incorrect regenerated size");

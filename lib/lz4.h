@@ -581,15 +581,15 @@ LZ4LIB_STATIC_API void LZ4_attach_dictionary(LZ4_stream_t* workingStream, const 
 
 #if defined(__cplusplus) || (defined (__STDC_VERSION__) && (__STDC_VERSION__ >= 199901L) /* C99 */)
 # include <stdint.h>
-  typedef  int8_t  LZ4_i8;
-  typedef uint8_t  LZ4_byte;
-  typedef uint16_t LZ4_u16;
-  typedef uint32_t LZ4_u32;
+typedef  int8_t  LZ4_i8;
+typedef uint8_t  LZ4_byte;
+typedef uint16_t LZ4_u16;
+typedef uint32_t LZ4_u32;
 #else
-  typedef   signed char  LZ4_i8;
-  typedef unsigned char  LZ4_byte;
-  typedef unsigned short LZ4_u16;
-  typedef unsigned int   LZ4_u32;
+typedef   signed char  LZ4_i8;
+typedef unsigned char  LZ4_byte;
+typedef unsigned short LZ4_u16;
+typedef unsigned int   LZ4_u32;
 #endif
 
 typedef struct LZ4_stream_t_internal LZ4_stream_t_internal;

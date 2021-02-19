@@ -65,7 +65,7 @@ static void test_compress(
 
         {
             const int cmpBytes = LZ4_compress_fast_continue(
-                lz4Stream, inpPtr, cmpBuf, inpBytes, cmpBufBytes, 1);
+                                     lz4Stream, inpPtr, cmpBuf, inpBytes, cmpBufBytes, 1);
             if (cmpBytes <= 0) break;
             write_uint16(outFp, (uint16_t) cmpBytes);
             write_bin(outFp, cmpBuf, cmpBytes);
@@ -105,7 +105,7 @@ static void test_decompress(
         {
             char* const decPtr = &decBuf[decOffset];
             const int decBytes = LZ4_decompress_safe_continue(
-                lz4StreamDecode, cmpBuf, decPtr, cmpBytes, (int) messageMaxBytes);
+                                     lz4StreamDecode, cmpBuf, decPtr, cmpBytes, (int) messageMaxBytes);
             if (decBytes <= 0) break;
             write_bin(outFp, decPtr, decBytes);
 

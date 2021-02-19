@@ -31,7 +31,7 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
     /* If compression succeeds it must round trip correctly. */
     {
         int const dstSize = LZ4_compress_default((const char*)data, dst,
-                                                 size, dstCapacity);
+                            size, dstCapacity);
         if (dstSize > 0) {
             int const rtSize = LZ4_decompress_safe(dst, rt, dstSize, size);
             FUZZ_ASSERT_MSG(rtSize == size, "Incorrect regenerated size");
@@ -43,7 +43,7 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
         /* Compression succeeds and must round trip correctly. */
         int compressedSize = size;
         int const dstSize = LZ4_compress_destSize((const char*)data, dst,
-                                                  &compressedSize, dstCapacity);
+                            &compressedSize, dstCapacity);
         FUZZ_ASSERT(dstSize > 0);
         int const rtSize = LZ4_decompress_safe(dst, rt, dstSize, size);
         FUZZ_ASSERT_MSG(rtSize == compressedSize, "Incorrect regenerated size");

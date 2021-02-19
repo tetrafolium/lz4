@@ -105,11 +105,17 @@
 /*! Modify the local functions below should you wish to use some other memory routines
 *   for malloc(), free() */
 #include <stdlib.h>
-static void* XXH_malloc(size_t s) { return malloc(s); }
-static void  XXH_free  (void* p)  { free(p); }
+static void* XXH_malloc(size_t s) {
+    return malloc(s);
+}
+static void  XXH_free  (void* p)  {
+    free(p);
+}
 /*! and for memcpy() */
 #include <string.h>
-static void* XXH_memcpy(void* dest, const void* src, size_t size) { return memcpy(dest,src,size); }
+static void* XXH_memcpy(void* dest, const void* src, size_t size) {
+    return memcpy(dest,src,size);
+}
 
 #include <assert.h>   /* assert */
 
@@ -144,27 +150,33 @@ static void* XXH_memcpy(void* dest, const void* src, size_t size) { return memcp
   && (defined (__cplusplus) \
   || (defined (__STDC_VERSION__) && (__STDC_VERSION__ >= 199901L) /* C99 */) )
 #   include <stdint.h>
-    typedef uint8_t  BYTE;
-    typedef uint16_t U16;
-    typedef uint32_t U32;
+typedef uint8_t  BYTE;
+typedef uint16_t U16;
+typedef uint32_t U32;
 # else
-    typedef unsigned char      BYTE;
-    typedef unsigned short     U16;
-    typedef unsigned int       U32;
+typedef unsigned char      BYTE;
+typedef unsigned short     U16;
+typedef unsigned int       U32;
 # endif
 #endif
 
 #if (defined(XXH_FORCE_MEMORY_ACCESS) && (XXH_FORCE_MEMORY_ACCESS==2))
 
 /* Force direct memory access. Only works on CPU which support unaligned memory access in hardware */
-static U32 XXH_read32(const void* memPtr) { return *(const U32*) memPtr; }
+static U32 XXH_read32(const void* memPtr) {
+    return *(const U32*) memPtr;
+}
 
 #elif (defined(XXH_FORCE_MEMORY_ACCESS) && (XXH_FORCE_MEMORY_ACCESS==1))
 
 /* __pack instructions are safer, but compiler specific, hence potentially problematic for some compilers */
 /* currently only defined for gcc and icc */
-typedef union { U32 u32; } __attribute__((packed)) unalign;
-static U32 XXH_read32(const void* ptr) { return ((const unalign*)ptr)->u32; }
+typedef union {
+    U32 u32;
+} __attribute__((packed)) unalign;
+static U32 XXH_read32(const void* ptr) {
+    return ((const unalign*)ptr)->u32;
+}
 
 #else
 
@@ -219,7 +231,10 @@ typedef enum { XXH_bigEndian=0, XXH_littleEndian=1 } XXH_endianess;
 #ifndef XXH_CPU_LITTLE_ENDIAN
 static int XXH_isLittleEndian(void)
 {
-    const union { U32 u; BYTE c[4]; } one = { 1 };   /* don't use static : performance detrimental  */
+    const union {
+        U32 u;
+        BYTE c[4];
+    } one = { 1 };   /* don't use static : performance detrimental  */
     return one.c[0];
 }
 #   define XXH_CPU_LITTLE_ENDIAN   XXH_isLittleEndian()
@@ -254,7 +269,9 @@ static U32 XXH_readBE32(const void* ptr)
 *  Macros
 ***************************************/
 #define XXH_STATIC_ASSERT(c)  { enum { XXH_sa = 1/(int)(!!(c)) }; }  /* use after variable declarations */
-XXH_PUBLIC_API unsigned XXH_versionNumber (void) { return XXH_VERSION_NUMBER; }
+XXH_PUBLIC_API unsigned XXH_versionNumber (void) {
+    return XXH_VERSION_NUMBER;
+}
 
 
 /* *******************************************************************
@@ -289,7 +306,7 @@ static U32 XXH32_avalanche(U32 h32)
 
 static U32
 XXH32_finalize(U32 h32, const void* ptr, size_t len,
-                XXH_endianess endian, XXH_alignment align)
+               XXH_endianess endian, XXH_alignment align)
 
 {
     const BYTE* p = (const BYTE*)ptr;
@@ -305,43 +322,59 @@ XXH32_finalize(U32 h32, const void* ptr, size_t len,
 
     switch(len&15)  /* or switch(bEnd - p) */
     {
-      case 12:      PROCESS4;
-                    /* fallthrough */
-      case 8:       PROCESS4;
-                    /* fallthrough */
-      case 4:       PROCESS4;
-                    return XXH32_avalanche(h32);
+    case 12:
+        PROCESS4;
+    /* fallthrough */
+    case 8:
+        PROCESS4;
+    /* fallthrough */
+    case 4:
+        PROCESS4;
+        return XXH32_avalanche(h32);
 
-      case 13:      PROCESS4;
-                    /* fallthrough */
-      case 9:       PROCESS4;
-                    /* fallthrough */
-      case 5:       PROCESS4;
-                    PROCESS1;
-                    return XXH32_avalanche(h32);
+    case 13:
+        PROCESS4;
+    /* fallthrough */
+    case 9:
+        PROCESS4;
+    /* fallthrough */
+    case 5:
+        PROCESS4;
+        PROCESS1;
+        return XXH32_avalanche(h32);
 
-      case 14:      PROCESS4;
-                    /* fallthrough */
-      case 10:      PROCESS4;
-                    /* fallthrough */
-      case 6:       PROCESS4;
-                    PROCESS1;
-                    PROCESS1;
-                    return XXH32_avalanche(h32);
+    case 14:
+        PROCESS4;
+    /* fallthrough */
+    case 10:
+        PROCESS4;
+    /* fallthrough */
+    case 6:
+        PROCESS4;
+        PROCESS1;
+        PROCESS1;
+        return XXH32_avalanche(h32);
 
-      case 15:      PROCESS4;
-                    /* fallthrough */
-      case 11:      PROCESS4;
-                    /* fallthrough */
-      case 7:       PROCESS4;
-                    /* fallthrough */
-      case 3:       PROCESS1;
-                    /* fallthrough */
-      case 2:       PROCESS1;
-                    /* fallthrough */
-      case 1:       PROCESS1;
-                    /* fallthrough */
-      case 0:       return XXH32_avalanche(h32);
+    case 15:
+        PROCESS4;
+    /* fallthrough */
+    case 11:
+        PROCESS4;
+    /* fallthrough */
+    case 7:
+        PROCESS4;
+    /* fallthrough */
+    case 3:
+        PROCESS1;
+    /* fallthrough */
+    case 2:
+        PROCESS1;
+    /* fallthrough */
+    case 1:
+        PROCESS1;
+    /* fallthrough */
+    case 0:
+        return XXH32_avalanche(h32);
     }
     assert(0);
     return h32;   /* reaching this point is deemed impossible */
@@ -350,7 +383,7 @@ XXH32_finalize(U32 h32, const void* ptr, size_t len,
 
 FORCE_INLINE U32
 XXH32_endian_align(const void* input, size_t len, U32 seed,
-                    XXH_endianess endian, XXH_alignment align)
+                   XXH_endianess endian, XXH_alignment align)
 {
     const BYTE* p = (const BYTE*)input;
     const BYTE* bEnd = p + len;
@@ -371,14 +404,18 @@ XXH32_endian_align(const void* input, size_t len, U32 seed,
         U32 v4 = seed - PRIME32_1;
 
         do {
-            v1 = XXH32_round(v1, XXH_get32bits(p)); p+=4;
-            v2 = XXH32_round(v2, XXH_get32bits(p)); p+=4;
-            v3 = XXH32_round(v3, XXH_get32bits(p)); p+=4;
-            v4 = XXH32_round(v4, XXH_get32bits(p)); p+=4;
+            v1 = XXH32_round(v1, XXH_get32bits(p));
+            p+=4;
+            v2 = XXH32_round(v2, XXH_get32bits(p));
+            p+=4;
+            v3 = XXH32_round(v3, XXH_get32bits(p));
+            p+=4;
+            v4 = XXH32_round(v4, XXH_get32bits(p));
+            p+=4;
         } while (p < limit);
 
         h32 = XXH_rotl32(v1, 1)  + XXH_rotl32(v2, 7)
-            + XXH_rotl32(v3, 12) + XXH_rotl32(v4, 18);
+              + XXH_rotl32(v3, 12) + XXH_rotl32(v4, 18);
     } else {
         h32  = seed + PRIME32_5;
     }
@@ -406,7 +443,8 @@ XXH_PUBLIC_API unsigned int XXH32 (const void* input, size_t len, unsigned int s
                 return XXH32_endian_align(input, len, seed, XXH_littleEndian, XXH_aligned);
             else
                 return XXH32_endian_align(input, len, seed, XXH_bigEndian, XXH_aligned);
-    }   }
+        }
+    }
 
     if ((endian_detected==XXH_littleEndian) || XXH_FORCE_NATIVE_FORMAT)
         return XXH32_endian_align(input, len, seed, XXH_littleEndian, XXH_unaligned);
@@ -473,9 +511,12 @@ XXH32_update_endian(XXH32_state_t* state, const void* input, size_t len, XXH_end
         if (state->memsize) {   /* some data left from previous update */
             XXH_memcpy((BYTE*)(state->mem32) + state->memsize, input, 16-state->memsize);
             {   const U32* p32 = state->mem32;
-                state->v1 = XXH32_round(state->v1, XXH_readLE32(p32, endian)); p32++;
-                state->v2 = XXH32_round(state->v2, XXH_readLE32(p32, endian)); p32++;
-                state->v3 = XXH32_round(state->v3, XXH_readLE32(p32, endian)); p32++;
+                state->v1 = XXH32_round(state->v1, XXH_readLE32(p32, endian));
+                p32++;
+                state->v2 = XXH32_round(state->v2, XXH_readLE32(p32, endian));
+                p32++;
+                state->v3 = XXH32_round(state->v3, XXH_readLE32(p32, endian));
+                p32++;
                 state->v4 = XXH32_round(state->v4, XXH_readLE32(p32, endian));
             }
             p += 16-state->memsize;
@@ -490,10 +531,14 @@ XXH32_update_endian(XXH32_state_t* state, const void* input, size_t len, XXH_end
             U32 v4 = state->v4;
 
             do {
-                v1 = XXH32_round(v1, XXH_readLE32(p, endian)); p+=4;
-                v2 = XXH32_round(v2, XXH_readLE32(p, endian)); p+=4;
-                v3 = XXH32_round(v3, XXH_readLE32(p, endian)); p+=4;
-                v4 = XXH32_round(v4, XXH_readLE32(p, endian)); p+=4;
+                v1 = XXH32_round(v1, XXH_readLE32(p, endian));
+                p+=4;
+                v2 = XXH32_round(v2, XXH_readLE32(p, endian));
+                p+=4;
+                v3 = XXH32_round(v3, XXH_readLE32(p, endian));
+                p+=4;
+                v4 = XXH32_round(v4, XXH_readLE32(p, endian));
+                p+=4;
             } while (p<=limit);
 
             state->v1 = v1;
@@ -530,9 +575,9 @@ XXH32_digest_endian (const XXH32_state_t* state, XXH_endianess endian)
 
     if (state->large_len) {
         h32 = XXH_rotl32(state->v1, 1)
-            + XXH_rotl32(state->v2, 7)
-            + XXH_rotl32(state->v3, 12)
-            + XXH_rotl32(state->v4, 18);
+              + XXH_rotl32(state->v2, 7)
+              + XXH_rotl32(state->v3, 12)
+              + XXH_rotl32(state->v4, 18);
     } else {
         h32 = state->v3 /* == seed */ + PRIME32_5;
     }
@@ -589,10 +634,10 @@ XXH_PUBLIC_API XXH32_hash_t XXH32_hashFromCanonical(const XXH32_canonical_t* src
   && (defined (__cplusplus) \
   || (defined (__STDC_VERSION__) && (__STDC_VERSION__ >= 199901L) /* C99 */) )
 #   include <stdint.h>
-    typedef uint64_t U64;
+typedef uint64_t U64;
 # else
-    /* if compiler doesn't support unsigned long long, replace by another 64-bit type */
-    typedef unsigned long long U64;
+/* if compiler doesn't support unsigned long long, replace by another 64-bit type */
+typedef unsigned long long U64;
 # endif
 #endif
 
@@ -600,14 +645,21 @@ XXH_PUBLIC_API XXH32_hash_t XXH32_hashFromCanonical(const XXH32_canonical_t* src
 #if (defined(XXH_FORCE_MEMORY_ACCESS) && (XXH_FORCE_MEMORY_ACCESS==2))
 
 /* Force direct memory access. Only works on CPU which support unaligned memory access in hardware */
-static U64 XXH_read64(const void* memPtr) { return *(const U64*) memPtr; }
+static U64 XXH_read64(const void* memPtr) {
+    return *(const U64*) memPtr;
+}
 
 #elif (defined(XXH_FORCE_MEMORY_ACCESS) && (XXH_FORCE_MEMORY_ACCESS==1))
 
 /* __pack instructions are safer, but compiler specific, hence potentially problematic for some compilers */
 /* currently only defined for gcc and icc */
-typedef union { U32 u32; U64 u64; } __attribute__((packed)) unalign64;
-static U64 XXH_read64(const void* ptr) { return ((const unalign64*)ptr)->u64; }
+typedef union {
+    U32 u32;
+    U64 u64;
+} __attribute__((packed)) unalign64;
+static U64 XXH_read64(const void* ptr) {
+    return ((const unalign64*)ptr)->u64;
+}
 
 #else
 
@@ -721,85 +773,117 @@ XXH64_finalize(U64 h64, const void* ptr, size_t len,
 }
 
     switch(len&31) {
-      case 24: PROCESS8_64;
-                    /* fallthrough */
-      case 16: PROCESS8_64;
-                    /* fallthrough */
-      case  8: PROCESS8_64;
-               return XXH64_avalanche(h64);
+    case 24:
+        PROCESS8_64;
+    /* fallthrough */
+    case 16:
+        PROCESS8_64;
+    /* fallthrough */
+    case  8:
+        PROCESS8_64;
+        return XXH64_avalanche(h64);
 
-      case 28: PROCESS8_64;
-                    /* fallthrough */
-      case 20: PROCESS8_64;
-                    /* fallthrough */
-      case 12: PROCESS8_64;
-                    /* fallthrough */
-      case  4: PROCESS4_64;
-               return XXH64_avalanche(h64);
+    case 28:
+        PROCESS8_64;
+    /* fallthrough */
+    case 20:
+        PROCESS8_64;
+    /* fallthrough */
+    case 12:
+        PROCESS8_64;
+    /* fallthrough */
+    case  4:
+        PROCESS4_64;
+        return XXH64_avalanche(h64);
 
-      case 25: PROCESS8_64;
-                    /* fallthrough */
-      case 17: PROCESS8_64;
-                    /* fallthrough */
-      case  9: PROCESS8_64;
-               PROCESS1_64;
-               return XXH64_avalanche(h64);
+    case 25:
+        PROCESS8_64;
+    /* fallthrough */
+    case 17:
+        PROCESS8_64;
+    /* fallthrough */
+    case  9:
+        PROCESS8_64;
+        PROCESS1_64;
+        return XXH64_avalanche(h64);
 
-      case 29: PROCESS8_64;
-                    /* fallthrough */
-      case 21: PROCESS8_64;
-                    /* fallthrough */
-      case 13: PROCESS8_64;
-                    /* fallthrough */
-      case  5: PROCESS4_64;
-               PROCESS1_64;
-               return XXH64_avalanche(h64);
+    case 29:
+        PROCESS8_64;
+    /* fallthrough */
+    case 21:
+        PROCESS8_64;
+    /* fallthrough */
+    case 13:
+        PROCESS8_64;
+    /* fallthrough */
+    case  5:
+        PROCESS4_64;
+        PROCESS1_64;
+        return XXH64_avalanche(h64);
 
-      case 26: PROCESS8_64;
-                    /* fallthrough */
-      case 18: PROCESS8_64;
-                    /* fallthrough */
-      case 10: PROCESS8_64;
-               PROCESS1_64;
-               PROCESS1_64;
-               return XXH64_avalanche(h64);
+    case 26:
+        PROCESS8_64;
+    /* fallthrough */
+    case 18:
+        PROCESS8_64;
+    /* fallthrough */
+    case 10:
+        PROCESS8_64;
+        PROCESS1_64;
+        PROCESS1_64;
+        return XXH64_avalanche(h64);
 
-      case 30: PROCESS8_64;
-                    /* fallthrough */
-      case 22: PROCESS8_64;
-                    /* fallthrough */
-      case 14: PROCESS8_64;
-                    /* fallthrough */
-      case  6: PROCESS4_64;
-               PROCESS1_64;
-               PROCESS1_64;
-               return XXH64_avalanche(h64);
+    case 30:
+        PROCESS8_64;
+    /* fallthrough */
+    case 22:
+        PROCESS8_64;
+    /* fallthrough */
+    case 14:
+        PROCESS8_64;
+    /* fallthrough */
+    case  6:
+        PROCESS4_64;
+        PROCESS1_64;
+        PROCESS1_64;
+        return XXH64_avalanche(h64);
 
-      case 27: PROCESS8_64;
-                    /* fallthrough */
-      case 19: PROCESS8_64;
-                    /* fallthrough */
-      case 11: PROCESS8_64;
-               PROCESS1_64;
-               PROCESS1_64;
-               PROCESS1_64;
-               return XXH64_avalanche(h64);
+    case 27:
+        PROCESS8_64;
+    /* fallthrough */
+    case 19:
+        PROCESS8_64;
+    /* fallthrough */
+    case 11:
+        PROCESS8_64;
+        PROCESS1_64;
+        PROCESS1_64;
+        PROCESS1_64;
+        return XXH64_avalanche(h64);
 
-      case 31: PROCESS8_64;
-                    /* fallthrough */
-      case 23: PROCESS8_64;
-                    /* fallthrough */
-      case 15: PROCESS8_64;
-                    /* fallthrough */
-      case  7: PROCESS4_64;
-                    /* fallthrough */
-      case  3: PROCESS1_64;
-                    /* fallthrough */
-      case  2: PROCESS1_64;
-                    /* fallthrough */
-      case  1: PROCESS1_64;
-                    /* fallthrough */
-      case  0: return XXH64_avalanche(h64);
+    case 31:
+        PROCESS8_64;
+    /* fallthrough */
+    case 23:
+        PROCESS8_64;
+    /* fallthrough */
+    case 15:
+        PROCESS8_64;
+    /* fallthrough */
+    case  7:
+        PROCESS4_64;
+    /* fallthrough */
+    case  3:
+        PROCESS1_64;
+    /* fallthrough */
+    case  2:
+        PROCESS1_64;
+    /* fallthrough */
+    case  1:
+        PROCESS1_64;
+    /* fallthrough */
+    case  0:
+        return XXH64_avalanche(h64);
     }
 
     /* impossible to reach */
@@ -809,7 +893,7 @@ XXH64_finalize(U64 h64, const void* ptr, size_t len,
 
 FORCE_INLINE U64
 XXH64_endian_align(const void* input, size_t len, U64 seed,
-                XXH_endianess endian, XXH_alignment align)
+                   XXH_endianess endian, XXH_alignment align)
 {
     const BYTE* p = (const BYTE*)input;
     const BYTE* bEnd = p + len;
@@ -830,10 +914,14 @@ XXH64_endian_align(const void* input, size_t len, U64 seed,
         U64 v4 = seed - PRIME64_1;
 
         do {
-            v1 = XXH64_round(v1, XXH_get64bits(p)); p+=8;
-            v2 = XXH64_round(v2, XXH_get64bits(p)); p+=8;
-            v3 = XXH64_round(v3, XXH_get64bits(p)); p+=8;
-            v4 = XXH64_round(v4, XXH_get64bits(p)); p+=8;
+            v1 = XXH64_round(v1, XXH_get64bits(p));
+            p+=8;
+            v2 = XXH64_round(v2, XXH_get64bits(p));
+            p+=8;
+            v3 = XXH64_round(v3, XXH_get64bits(p));
+            p+=8;
+            v4 = XXH64_round(v4, XXH_get64bits(p));
+            p+=8;
         } while (p<=limit);
 
         h64 = XXH_rotl64(v1, 1) + XXH_rotl64(v2, 7) + XXH_rotl64(v3, 12) + XXH_rotl64(v4, 18);
@@ -869,7 +957,8 @@ XXH_PUBLIC_API unsigned long long XXH64 (const void* input, size_t len, unsigned
                 return XXH64_endian_align(input, len, seed, XXH_littleEndian, XXH_aligned);
             else
                 return XXH64_endian_align(input, len, seed, XXH_bigEndian, XXH_aligned);
-    }   }
+        }
+    }
 
     if ((endian_detected==XXH_littleEndian) || XXH_FORCE_NATIVE_FORMAT)
         return XXH64_endian_align(input, len, seed, XXH_littleEndian, XXH_unaligned);
@@ -903,7 +992,7 @@ XXH_PUBLIC_API XXH_errorcode XXH64_reset(XXH64_state_t* statePtr, unsigned long 
     state.v2 = seed + PRIME64_2;
     state.v3 = seed + 0;
     state.v4 = seed - PRIME64_1;
-     /* do not write into reserved, planned to be removed in a future version */
+    /* do not write into reserved, planned to be removed in a future version */
     memcpy(statePtr, &state, sizeof(state) - sizeof(state.reserved));
     return XXH_OK;
 }
@@ -947,10 +1036,14 @@ XXH64_update_endian (XXH64_state_t* state, const void* input, size_t len, XXH_en
             U64 v4 = state->v4;
 
             do {
-                v1 = XXH64_round(v1, XXH_readLE64(p, endian)); p+=8;
-                v2 = XXH64_round(v2, XXH_readLE64(p, endian)); p+=8;
-                v3 = XXH64_round(v3, XXH_readLE64(p, endian)); p+=8;
-                v4 = XXH64_round(v4, XXH_readLE64(p, endian)); p+=8;
+                v1 = XXH64_round(v1, XXH_readLE64(p, endian));
+                p+=8;
+                v2 = XXH64_round(v2, XXH_readLE64(p, endian));
+                p+=8;
+                v3 = XXH64_round(v3, XXH_readLE64(p, endian));
+                p+=8;
+                v4 = XXH64_round(v4, XXH_readLE64(p, endian));
+                p+=8;
             } while (p<=limit);
 
             state->v1 = v1;

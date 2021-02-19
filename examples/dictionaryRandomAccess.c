@@ -29,27 +29,37 @@ const char kTestMagic[] = { 'T', 'E', 'S', 'T' };
 
 void write_int(FILE* fp, int i) {
     size_t written = fwrite(&i, sizeof(i), 1, fp);
-    if (written != 1) { exit(10); }
+    if (written != 1) {
+        exit(10);
+    }
 }
 
 void write_bin(FILE* fp, const void* array, size_t arrayBytes) {
     size_t written = fwrite(array, 1, arrayBytes, fp);
-    if (written != arrayBytes) { exit(11); }
+    if (written != arrayBytes) {
+        exit(11);
+    }
 }
 
 void read_int(FILE* fp, int* i) {
     size_t read = fread(i, sizeof(*i), 1, fp);
-    if (read != 1) { exit(12); }
+    if (read != 1) {
+        exit(12);
+    }
 }
 
 size_t read_bin(FILE* fp, void* array, size_t arrayBytes) {
     size_t read = fread(array, 1, arrayBytes, fp);
-    if (ferror(fp)) { exit(12); }
+    if (ferror(fp)) {
+        exit(12);
+    }
     return read;
 }
 
 void seek_bin(FILE* fp, long offset, int origin) {
-    if (fseek(fp, offset, origin)) { exit(14); }
+    if (fseek(fp, offset, origin)) {
+        exit(14);
+    }
 }
 
 
@@ -82,14 +92,18 @@ void test_compress(FILE* outFp, FILE* inpFp, void *dict, int dictSize)
         {
             char cmpBuf[LZ4_COMPRESSBOUND(BLOCK_BYTES)];
             const int cmpBytes = LZ4_compress_fast_continue(
-                lz4Stream, inpBuf, cmpBuf, inpBytes, sizeof(cmpBuf), 1);
-            if(cmpBytes <= 0) { exit(1); }
+                                     lz4Stream, inpBuf, cmpBuf, inpBytes, sizeof(cmpBuf), 1);
+            if(cmpBytes <= 0) {
+                exit(1);
+            }
             write_bin(outFp, cmpBuf, (size_t)cmpBytes);
             /* Keep track of the offsets */
             *offsetsEnd = *(offsetsEnd - 1) + cmpBytes;
             ++offsetsEnd;
         }
-        if (offsetsEnd - offsets > MAX_BLOCKS) { exit(2); }
+        if (offsetsEnd - offsets > MAX_BLOCKS) {
+            exit(2);
+        }
     }
     /* Write the tailing jump table */
     {
@@ -115,14 +129,20 @@ void test_decompress(FILE* outFp, FILE* inpFp, void *dict, int dictSize, int off
     int offsets[MAX_BLOCKS];
 
     /* Special cases */
-    if (length == 0) { return; }
+    if (length == 0) {
+        return;
+    }
 
     /* Read the magic bytes */
     {
         char magic[sizeof(kTestMagic)];
         size_t read = read_bin(inpFp, magic, sizeof(magic));
-        if (read != sizeof(magic)) { exit(1); }
-        if (memcmp(kTestMagic, magic, sizeof(magic))) { exit(2); }
+        if (read != sizeof(magic)) {
+            exit(1);
+        }
+        if (memcmp(kTestMagic, magic, sizeof(magic))) {
+            exit(2);
+        }
     }
 
     /* Read the offsets tail */
@@ -132,7 +152,9 @@ void test_decompress(FILE* outFp, FILE* inpFp, void *dict, int dictSize, int off
         int *offsetsPtr = offsets;
         seek_bin(inpFp, -4, SEEK_END);
         read_int(inpFp, &numOffsets);
-        if (numOffsets <= endBlock) { exit(3); }
+        if (numOffsets <= endBlock) {
+            exit(3);
+        }
         seek_bin(inpFp, -4 * (numOffsets + 1), SEEK_END);
         for (block = 0; block <= endBlock; ++block) {
             read_int(inpFp, offsetsPtr++);
@@ -149,15 +171,19 @@ void test_decompress(FILE* outFp, FILE* inpFp, void *dict, int dictSize, int off
         int  cmpBytes = offsets[currentBlock + 1] - offsets[currentBlock];
         {
             const size_t read = read_bin(inpFp, cmpBuf, (size_t)cmpBytes);
-            if(read != (size_t)cmpBytes) { exit(4); }
+            if(read != (size_t)cmpBytes) {
+                exit(4);
+            }
         }
 
         /* Load the dictionary */
         LZ4_setStreamDecode(lz4StreamDecode, dict, dictSize);
         {
             const int decBytes = LZ4_decompress_safe_continue(
-                lz4StreamDecode, cmpBuf, decBuf, cmpBytes, BLOCK_BYTES);
-            if(decBytes <= 0) { exit(5); }
+                                     lz4StreamDecode, cmpBuf, decBuf, cmpBytes, BLOCK_BYTES);
+            if(decBytes <= 0) {
+                exit(5);
+            }
             {
                 /* Write out the part of the data we care about */
                 int blockLength = MIN(length, (decBytes - offset));

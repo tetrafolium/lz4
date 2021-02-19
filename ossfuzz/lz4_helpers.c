@@ -40,7 +40,7 @@ size_t FUZZ_decompressFrame(void* dst, const size_t dstCapacity,
     size_t dstSize = dstCapacity;
     size_t srcConsumed = srcSize;
     size_t const rc =
-            LZ4F_decompress(dctx, dst, &dstSize, src, &srcConsumed, &opts);
+        LZ4F_decompress(dctx, dst, &dstSize, src, &srcConsumed, &opts);
     FUZZ_ASSERT(!LZ4F_isError(rc));
     FUZZ_ASSERT(rc == 0);
     FUZZ_ASSERT(srcConsumed == srcSize);

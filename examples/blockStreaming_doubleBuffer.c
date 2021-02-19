@@ -56,7 +56,7 @@ void test_compress(FILE* outFp, FILE* inpFp)
         {
             char cmpBuf[LZ4_COMPRESSBOUND(BLOCK_BYTES)];
             const int cmpBytes = LZ4_compress_fast_continue(
-                lz4Stream, inpPtr, cmpBuf, inpBytes, sizeof(cmpBuf), 1);
+                                     lz4Stream, inpPtr, cmpBuf, inpBytes, sizeof(cmpBuf), 1);
             if(cmpBytes <= 0) {
                 break;
             }
@@ -100,7 +100,7 @@ void test_decompress(FILE* outFp, FILE* inpFp)
         {
             char* const decPtr = decBuf[decBufIndex];
             const int decBytes = LZ4_decompress_safe_continue(
-                lz4StreamDecode, cmpBuf, decPtr, cmpBytes, BLOCK_BYTES);
+                                     lz4StreamDecode, cmpBuf, decPtr, cmpBytes, BLOCK_BYTES);
             if(decBytes <= 0) {
                 break;
             }

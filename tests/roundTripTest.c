@@ -100,7 +100,7 @@ typedef int (*compressFn)(const char* src, char* dst, int srcSize, int dstSize, 
  *         for compression to be guaranteed to work */
 static void roundTripTest(void* resultBuff, size_t resultBuffCapacity,
                           void* compressedBuff, size_t compressedBuffCapacity,
-                    const void* srcBuff, size_t srcSize,
+                          const void* srcBuff, size_t srcSize,
                           int clevel)
 {
     int const proposed_clevel = clevel ? clevel : select_clevel(srcBuff, srcSize);
@@ -194,7 +194,8 @@ static void loadFile(void* buffer, const char* fileName, size_t fileSize)
         if (readSize != fileSize) {
             MSG("Error reading %s \n", fileName);
             exit(5);
-    }   }
+        }
+    }
     fclose(f);
 }
 

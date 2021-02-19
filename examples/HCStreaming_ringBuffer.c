@@ -112,7 +112,7 @@ void test_decompress(FILE* outFp, FILE* inpFp)
 
         {   char* const decPtr = &decBuf[decOffset];
             const int decBytes = LZ4_decompress_safe_continue(
-                lz4StreamDecode, cmpBuf, decPtr, cmpBytes, MESSAGE_MAX_BYTES);
+                                     lz4StreamDecode, cmpBuf, decPtr, cmpBytes, MESSAGE_MAX_BYTES);
             if(decBytes <= 0)
                 break;
 
@@ -177,7 +177,10 @@ int main(int argc, const char** argv)
         return 0;
     }
 
-    if (!strcmp(argv[1], "-p")) { pause = 1; fileID = 2; }
+    if (!strcmp(argv[1], "-p")) {
+        pause = 1;
+        fileID = 2;
+    }
 
     snprintf(inpFilename, 256, "%s", argv[fileID]);
     snprintf(lz4Filename, 256, "%s.lz4s-%d", argv[fileID], 9);
@@ -225,7 +228,8 @@ int main(int argc, const char** argv)
     if (pause) {
         int unused;
         printf("Press enter to continue ...\n");
-        unused = getchar(); (void)unused;   /* silence static analyzer */
+        unused = getchar();
+        (void)unused;   /* silence static analyzer */
     }
 
     return 0;

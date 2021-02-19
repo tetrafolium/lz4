@@ -29,7 +29,7 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
 
     /* Compression must succeed and round trip correctly. */
     int const dstSize = LZ4_compress_default((const char*)data, dst,
-                                             size, dstCapacity);
+                        size, dstCapacity);
     FUZZ_ASSERT(dstSize > 0);
 
     int const rtSize = LZ4_decompress_safe(dst, rt, dstSize, size);
@@ -41,7 +41,7 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
         char* const partial = (char*)malloc(partialCapacity);
         FUZZ_ASSERT(partial);
         int const partialSize = LZ4_decompress_safe_partial(
-                dst, partial, dstSize, partialCapacity, partialCapacity);
+                                    dst, partial, dstSize, partialCapacity, partialCapacity);
         FUZZ_ASSERT(partialSize >= 0);
         FUZZ_ASSERT_MSG(partialSize == partialCapacity, "Incorrect size");
         FUZZ_ASSERT_MSG(!memcmp(data, partial, partialSize), "Corruption!");

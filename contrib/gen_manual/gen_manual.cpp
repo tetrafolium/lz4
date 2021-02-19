@@ -47,7 +47,7 @@ void trim(string& s, string characters)
 
     p = s.find_last_not_of(characters);
     if (string::npos != p)
-       s.erase(p+1);
+        s.erase(p+1);
 }
 
 
@@ -71,7 +71,10 @@ vector<string> get_lines(vector<string>& input, int& linenum, string terminator)
     while ((size_t)linenum < input.size()) {
         line = input[linenum];
 
-        if (terminator.empty() && line.empty()) { linenum--; break; }
+        if (terminator.empty() && line.empty()) {
+            linenum--;
+            break;
+        }
 
         size_t const epos = line.find(terminator);
         if (!terminator.empty() && epos!=string::npos) {
@@ -130,7 +133,7 @@ int main(int argc, char *argv[]) {
     if (!ostream.is_open()) {
         cout << "Error opening file " << argv[3] << endl;
         return 1;
-   }
+    }
 
     while (getline(istream, line)) {
         input.push_back(line);
@@ -152,7 +155,7 @@ int main(int argc, char *argv[]) {
 
         /* comments of type  / * * < and  / * ! <  are detected, and only function declaration is highlighted (bold) */
         if ((line.find("/**<")!=string::npos || line.find("/*!<")!=string::npos)
-          && line.find("*/")!=string::npos) {
+                && line.find("*/")!=string::npos) {
             sout << "<pre><b>";
             print_line(sout, line);
             sout << "</b></pre><BR>" << endl;

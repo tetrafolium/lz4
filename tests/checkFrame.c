@@ -1,69 +1,69 @@
-  /*
-      checkFrame - verify frame headers
-      Copyright (C) Yann Collet 2014-2020
+/*
+    checkFrame - verify frame headers
+    Copyright (C) Yann Collet 2014-2020
 
-      GPL v2 License
+    GPL v2 License
 
-      This program is free software; you can redistribute it and/or modify
-      it under the terms of the GNU General Public License as published by
-      the Free Software Foundation; either version 2 of the License, or
-      (at your option) any later version.
+    This program is free software; you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation; either version 2 of the License, or
+    (at your option) any later version.
 
-      This program is distributed in the hope that it will be useful,
-      but WITHOUT ANY WARRANTY; without even the implied warranty of
-      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-      GNU General Public License for more details.
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
 
-      You should have received a copy of the GNU General Public License along
-      with this program; if not, write to the Free Software Foundation, Inc.,
-      51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+    You should have received a copy of the GNU General Public License along
+    with this program; if not, write to the Free Software Foundation, Inc.,
+    51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
-      You can contact the author at :
-      - LZ4 homepage : http://www.lz4.org
-      - LZ4 source repository : https://github.com/lz4/lz4
-  */
+    You can contact the author at :
+    - LZ4 homepage : http://www.lz4.org
+    - LZ4 source repository : https://github.com/lz4/lz4
+*/
 
-  /*-************************************
-  *  Includes
-  **************************************/
-  #include "util.h"       /* U32 */
-  #include <stdlib.h>     /* malloc, free */
-  #include <stdio.h>      /* fprintf */
-  #include <string.h>     /* strcmp */
-  #include <time.h>       /* clock_t, clock(), CLOCKS_PER_SEC */
-  #include <assert.h>
-  #include "lz4frame.h"   /* include multiple times to test correctness/safety */
-  #include "lz4frame.h"
-  #define LZ4F_STATIC_LINKING_ONLY
-  #include "lz4frame.h"
-  #include "lz4frame.h"
-  #include "lz4.h"        /* LZ4_VERSION_STRING */
-  #define XXH_STATIC_LINKING_ONLY
-  #include "xxhash.h"     /* XXH64 */
-
-
-  /*-************************************
-  *  Constants
-  **************************************/
-  #define KB *(1U<<10)
-  #define MB *(1U<<20)
-  #define GB *(1U<<30)
+/*-************************************
+*  Includes
+**************************************/
+#include "util.h"       /* U32 */
+#include <stdlib.h>     /* malloc, free */
+#include <stdio.h>      /* fprintf */
+#include <string.h>     /* strcmp */
+#include <time.h>       /* clock_t, clock(), CLOCKS_PER_SEC */
+#include <assert.h>
+#include "lz4frame.h"   /* include multiple times to test correctness/safety */
+#include "lz4frame.h"
+#define LZ4F_STATIC_LINKING_ONLY
+#include "lz4frame.h"
+#include "lz4frame.h"
+#include "lz4.h"        /* LZ4_VERSION_STRING */
+#define XXH_STATIC_LINKING_ONLY
+#include "xxhash.h"     /* XXH64 */
 
 
-  /*-************************************
-  *  Macros
-  **************************************/
-  #define DISPLAY(...)          fprintf(stderr, __VA_ARGS__)
-  #define DISPLAYLEVEL(l, ...)  if (displayLevel>=l) { DISPLAY(__VA_ARGS__); }
+/*-************************************
+*  Constants
+**************************************/
+#define KB *(1U<<10)
+#define MB *(1U<<20)
+#define GB *(1U<<30)
 
-  /**************************************
-  *  Exceptions
-  ***************************************/
-  #ifndef DEBUG
-  #  define DEBUG 0
-  #endif
-  #define DEBUGOUTPUT(...) if (DEBUG) DISPLAY(__VA_ARGS__);
-  #define EXM_THROW(error, ...)                                             \
+
+/*-************************************
+*  Macros
+**************************************/
+#define DISPLAY(...)          fprintf(stderr, __VA_ARGS__)
+#define DISPLAYLEVEL(l, ...)  if (displayLevel>=l) { DISPLAY(__VA_ARGS__); }
+
+/**************************************
+*  Exceptions
+***************************************/
+#ifndef DEBUG
+#  define DEBUG 0
+#endif
+#define DEBUGOUTPUT(...) if (DEBUG) DISPLAY(__VA_ARGS__);
+#define EXM_THROW(error, ...)                                             \
 {                                                                         \
     DEBUGOUTPUT("Error defined at %s, line %i : \n", __FILE__, __LINE__); \
     DISPLAYLEVEL(1, "Error %i : ", error);                                \
@@ -152,10 +152,10 @@ int frameCheck(cRess_t ress, FILE* const srcFile, unsigned bsid, size_t blockSiz
                 nextToLoad = LZ4F_getFrameInfo(ress.ctx, &frameInfo, (char*)(ress.srcBuffer)+pos, &remaining);
                 if (LZ4F_isError(nextToLoad))
                     EXM_THROW(22, "Error getting frame info: %s",
-                                LZ4F_getErrorName(nextToLoad));
+                              LZ4F_getErrorName(nextToLoad));
                 if (frameInfo.blockSizeID != bsid)
                     EXM_THROW(23, "Block size ID %u != expected %u",
-                                frameInfo.blockSizeID, bsid);
+                              frameInfo.blockSizeID, bsid);
                 pos += remaining;
                 /* nextToLoad should be block header size */
                 remaining = nextToLoad;
@@ -185,7 +185,7 @@ int frameCheck(cRess_t ress, FILE* const srcFile, unsigned bsid, size_t blockSiz
                 if ((curblocksize != 0) && (nextToLoad > 4)) {
                     if (curblocksize != blockSize)
                         EXM_THROW(25, "Block size %u != expected %u, pos %u\n",
-                                    (unsigned)curblocksize, (unsigned)blockSize, (unsigned)pos);
+                                  (unsigned)curblocksize, (unsigned)blockSize, (unsigned)pos);
                 }
                 curblocksize = 0;
             }
@@ -283,7 +283,7 @@ int main(int argc, const char** argv)
             FILE *srcFile;
             cRess_t ress;
             if (bsid == 0 || blockSize == 0)
-              return FUZ_usage(programName);
+                return FUZ_usage(programName);
             DISPLAY("Starting frame checker (%i-bits, %s)\n", (int)(sizeof(size_t)*8), LZ4_VERSION_STRING);
             err = createCResources(&ress);
             if (err) return (err);

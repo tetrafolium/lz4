@@ -24,7 +24,7 @@ uint32_t FUZZ_getRange_from_uint32(uint32_t seed, uint32_t min, uint32_t max);
 
 /* Combination of above two functions for non adaptive use cases. ie where size is not involved */
 uint32_t FUZZ_dataProducer_range32(FUZZ_dataProducer_t *producer, uint32_t min,
-                                  uint32_t max);
+                                   uint32_t max);
 
 /* Returns lz4 preferences */
 LZ4F_preferences_t FUZZ_dataProducer_preferences(FUZZ_dataProducer_t* producer);

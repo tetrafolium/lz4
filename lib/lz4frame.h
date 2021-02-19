@@ -126,10 +126,10 @@ typedef enum {
     LZ4F_max256KB=5,
     LZ4F_max1MB=6,
     LZ4F_max4MB=7
-    LZ4F_OBSOLETE_ENUM(max64KB)
-    LZ4F_OBSOLETE_ENUM(max256KB)
-    LZ4F_OBSOLETE_ENUM(max1MB)
-    LZ4F_OBSOLETE_ENUM(max4MB)
+                LZ4F_OBSOLETE_ENUM(max64KB)
+                LZ4F_OBSOLETE_ENUM(max256KB)
+                LZ4F_OBSOLETE_ENUM(max1MB)
+                LZ4F_OBSOLETE_ENUM(max4MB)
 } LZ4F_blockSizeID_t;
 
 /* Linked blocks sharply reduce inefficiencies when using small blocks,
@@ -173,13 +173,13 @@ typedef LZ4F_contentChecksum_t contentChecksum_t;
  *  setting all parameters to default.
  *  It's then possible to update selectively some parameters */
 typedef struct {
-  LZ4F_blockSizeID_t     blockSizeID;         /* max64KB, max256KB, max1MB, max4MB; 0 == default */
-  LZ4F_blockMode_t       blockMode;           /* LZ4F_blockLinked, LZ4F_blockIndependent; 0 == default */
-  LZ4F_contentChecksum_t contentChecksumFlag; /* 1: frame terminated with 32-bit checksum of decompressed data; 0: disabled (default) */
-  LZ4F_frameType_t       frameType;           /* read-only field : LZ4F_frame or LZ4F_skippableFrame */
-  unsigned long long     contentSize;         /* Size of uncompressed content ; 0 == unknown */
-  unsigned               dictID;              /* Dictionary ID, sent by compressor to help decoder select correct dictionary; 0 == no dictID provided */
-  LZ4F_blockChecksum_t   blockChecksumFlag;   /* 1: each block followed by a checksum of block's compressed data; 0: disabled (default) */
+    LZ4F_blockSizeID_t     blockSizeID;         /* max64KB, max256KB, max1MB, max4MB; 0 == default */
+    LZ4F_blockMode_t       blockMode;           /* LZ4F_blockLinked, LZ4F_blockIndependent; 0 == default */
+    LZ4F_contentChecksum_t contentChecksumFlag; /* 1: frame terminated with 32-bit checksum of decompressed data; 0: disabled (default) */
+    LZ4F_frameType_t       frameType;           /* read-only field : LZ4F_frame or LZ4F_skippableFrame */
+    unsigned long long     contentSize;         /* Size of uncompressed content ; 0 == unknown */
+    unsigned               dictID;              /* Dictionary ID, sent by compressor to help decoder select correct dictionary; 0 == no dictID provided */
+    LZ4F_blockChecksum_t   blockChecksumFlag;   /* 1: each block followed by a checksum of block's compressed data; 0: disabled (default) */
 } LZ4F_frameInfo_t;
 
 #define LZ4F_INIT_FRAMEINFO   { LZ4F_default, LZ4F_blockLinked, LZ4F_noContentChecksum, LZ4F_frame, 0ULL, 0U, LZ4F_noBlockChecksum }    /* v1.8.3+ */
@@ -190,11 +190,11 @@ typedef struct {
  *  setting all parameters to default.
  *  All reserved fields must be set to zero. */
 typedef struct {
-  LZ4F_frameInfo_t frameInfo;
-  int      compressionLevel;    /* 0: default (fast mode); values > LZ4HC_CLEVEL_MAX count as LZ4HC_CLEVEL_MAX; values < 0 trigger "fast acceleration" */
-  unsigned autoFlush;           /* 1: always flush; reduces usage of internal buffers */
-  unsigned favorDecSpeed;       /* 1: parser favors decompression speed vs compression ratio. Only works for high compression modes (>= LZ4HC_CLEVEL_OPT_MIN) */  /* v1.8.2+ */
-  unsigned reserved[3];         /* must be zero for forward compatibility */
+    LZ4F_frameInfo_t frameInfo;
+    int      compressionLevel;    /* 0: default (fast mode); values > LZ4HC_CLEVEL_MAX count as LZ4HC_CLEVEL_MAX; values < 0 trigger "fast acceleration" */
+    unsigned autoFlush;           /* 1: always flush; reduces usage of internal buffers */
+    unsigned favorDecSpeed;       /* 1: parser favors decompression speed vs compression ratio. Only works for high compression modes (>= LZ4HC_CLEVEL_OPT_MIN) */  /* v1.8.2+ */
+    unsigned reserved[3];         /* must be zero for forward compatibility */
 } LZ4F_preferences_t;
 
 #define LZ4F_INIT_PREFERENCES   { LZ4F_INIT_FRAMEINFO, 0, 0u, 0u, { 0u, 0u, 0u } }    /* v1.8.3+ */
@@ -222,8 +222,8 @@ LZ4FLIB_API size_t LZ4F_compressFrameBound(size_t srcSize, const LZ4F_preference
  *           or an error code if it fails (can be tested using LZ4F_isError())
  */
 LZ4FLIB_API size_t LZ4F_compressFrame(void* dstBuffer, size_t dstCapacity,
-                                const void* srcBuffer, size_t srcSize,
-                                const LZ4F_preferences_t* preferencesPtr);
+                                      const void* srcBuffer, size_t srcSize,
+                                      const LZ4F_preferences_t* preferencesPtr);
 
 
 /*-***********************************
@@ -233,8 +233,8 @@ typedef struct LZ4F_cctx_s LZ4F_cctx;   /* incomplete type */
 typedef LZ4F_cctx* LZ4F_compressionContext_t;   /* for compatibility with previous API version */
 
 typedef struct {
-  unsigned stableSrc;    /* 1 == src content will remain present on future calls to LZ4F_compress(); skip copying src content within tmp buffer */
-  unsigned reserved[3];
+    unsigned stableSrc;    /* 1 == src content will remain present on future calls to LZ4F_compress(); skip copying src content within tmp buffer */
+    unsigned reserved[3];
 } LZ4F_compressOptions_t;
 
 /*---   Resource Management   ---*/
@@ -309,8 +309,8 @@ LZ4FLIB_API size_t LZ4F_compressBound(size_t srcSize, const LZ4F_preferences_t* 
  */
 LZ4FLIB_API size_t LZ4F_compressUpdate(LZ4F_cctx* cctx,
                                        void* dstBuffer, size_t dstCapacity,
-                                 const void* srcBuffer, size_t srcSize,
-                                 const LZ4F_compressOptions_t* cOptPtr);
+                                       const void* srcBuffer, size_t srcSize,
+                                       const LZ4F_compressOptions_t* cOptPtr);
 
 /*! LZ4F_flush() :
  *  When data must be generated and sent immediately, without waiting for a block to be completely filled,
@@ -323,7 +323,7 @@ LZ4FLIB_API size_t LZ4F_compressUpdate(LZ4F_cctx* cctx,
  */
 LZ4FLIB_API size_t LZ4F_flush(LZ4F_cctx* cctx,
                               void* dstBuffer, size_t dstCapacity,
-                        const LZ4F_compressOptions_t* cOptPtr);
+                              const LZ4F_compressOptions_t* cOptPtr);
 
 /*! LZ4F_compressEnd() :
  *  To properly finish an LZ4 frame, invoke LZ4F_compressEnd().
@@ -337,7 +337,7 @@ LZ4FLIB_API size_t LZ4F_flush(LZ4F_cctx* cctx,
  */
 LZ4FLIB_API size_t LZ4F_compressEnd(LZ4F_cctx* cctx,
                                     void* dstBuffer, size_t dstCapacity,
-                              const LZ4F_compressOptions_t* cOptPtr);
+                                    const LZ4F_compressOptions_t* cOptPtr);
 
 
 /*-*********************************
@@ -347,8 +347,8 @@ typedef struct LZ4F_dctx_s LZ4F_dctx;   /* incomplete type */
 typedef LZ4F_dctx* LZ4F_decompressionContext_t;   /* compatibility with previous API versions */
 
 typedef struct {
-  unsigned stableDst;    /* pledges that last 64KB decompressed data will remain available unmodified. This optimization skips storage operations in tmp buffers. */
-  unsigned reserved[3];  /* must be set to zero for forward compatibility */
+    unsigned stableDst;    /* pledges that last 64KB decompressed data will remain available unmodified. This optimization skips storage operations in tmp buffers. */
+    unsigned reserved[3];  /* must be set to zero for forward compatibility */
 } LZ4F_decompressOptions_t;
 
 
@@ -535,7 +535,8 @@ extern "C" {
 
 /* enum list is exposed, to handle specific errors */
 typedef enum { LZ4F_LIST_ERRORS(LZ4F_GENERATE_ENUM)
-              _LZ4F_dummy_error_enum_for_c89_never_used } LZ4F_errorCodes;
+               _LZ4F_dummy_error_enum_for_c89_never_used
+             } LZ4F_errorCodes;
 
 LZ4FLIB_STATIC_API LZ4F_errorCodes LZ4F_getErrorCode(size_t functionResult);
 

@@ -16,36 +16,36 @@
 #include "lz4hc.h"
 
 typedef struct {
-  char const* buf;
-  size_t size;
-  size_t pos;
+    char const* buf;
+    size_t size;
+    size_t pos;
 } const_cursor_t;
 
 typedef struct {
-  char* buf;
-  size_t size;
-  size_t pos;
+    char* buf;
+    size_t size;
+    size_t pos;
 } cursor_t;
 
 typedef struct {
-  LZ4_stream_t* cstream;
-  LZ4_streamHC_t* cstreamHC;
-  LZ4_streamDecode_t* dstream;
-  const_cursor_t data;
-  cursor_t compressed;
-  cursor_t roundTrip;
-  uint32_t seed;
-  int level;
+    LZ4_stream_t* cstream;
+    LZ4_streamHC_t* cstreamHC;
+    LZ4_streamDecode_t* dstream;
+    const_cursor_t data;
+    cursor_t compressed;
+    cursor_t roundTrip;
+    uint32_t seed;
+    int level;
 } state_t;
 
 cursor_t cursor_create(size_t size)
 {
-  cursor_t cursor;
-  cursor.buf = (char*)malloc(size);
-  cursor.size = size;
-  cursor.pos = 0;
-  FUZZ_ASSERT(cursor.buf);
-  return cursor;
+    cursor_t cursor;
+    cursor.buf = (char*)malloc(size);
+    cursor.size = size;
+    cursor.pos = 0;
+    FUZZ_ASSERT(cursor.buf);
+    return cursor;
 }
 
 typedef void (*round_trip_t)(state_t* state);
@@ -105,7 +105,7 @@ static void state_decompress(state_t* state, char const* src, int srcSize)
     char* dst = state->roundTrip.buf + state->roundTrip.pos;
     int const dstCapacity = state->roundTrip.size - state->roundTrip.pos;
     int const dSize = LZ4_decompress_safe_continue(state->dstream, src, dst,
-                                                   srcSize, dstCapacity);
+                      srcSize, dstCapacity);
     FUZZ_ASSERT(dSize >= 0);
     state->roundTrip.pos += dSize;
 }
@@ -145,7 +145,7 @@ static void state_prefixRoundTrip(state_t* state)
         int const srcSize = FUZZ_rand32(&state->seed, 0, srcRemaining);
         int const dstCapacity = state->compressed.size - state->compressed.pos;
         int const cSize = LZ4_compress_fast_continue(state->cstream, src, dst,
-                                                     srcSize, dstCapacity, 0);
+                          srcSize, dstCapacity, 0);
         FUZZ_ASSERT(cSize > 0);
         state->data.pos += srcSize;
         state->compressed.pos += cSize;
@@ -166,7 +166,7 @@ static void state_extDictRoundTrip(state_t* state)
         int const srcSize = FUZZ_rand32(&state->seed, 0, srcRemaining);
         int const dstCapacity = state->compressed.size - state->compressed.pos;
         int const cSize = LZ4_compress_fast_continue(state->cstream, src, dst,
-                                                     srcSize, dstCapacity, 0);
+                          srcSize, dstCapacity, 0);
         FUZZ_ASSERT(cSize > 0);
         state->data.pos += srcSize;
         state->compressed.pos += cSize;
@@ -179,9 +179,9 @@ static void state_randomRoundTrip(state_t* state, round_trip_t rt0,
                                   round_trip_t rt1)
 {
     if (FUZZ_rand32(&state->seed, 0, 1)) {
-      rt0(state);
+        rt0(state);
     } else {
-      rt1(state);
+        rt1(state);
     }
 }
 
@@ -215,7 +215,7 @@ static void state_prefixHCRoundTrip(state_t* state)
         int const srcSize = FUZZ_rand32(&state->seed, 0, srcRemaining);
         int const dstCapacity = state->compressed.size - state->compressed.pos;
         int const cSize = LZ4_compress_HC_continue(state->cstreamHC, src, dst,
-                                                   srcSize, dstCapacity);
+                          srcSize, dstCapacity);
         FUZZ_ASSERT(cSize > 0);
         state->data.pos += srcSize;
         state->compressed.pos += cSize;
@@ -237,7 +237,7 @@ static void state_extDictHCRoundTrip(state_t* state)
         int const srcSize = FUZZ_rand32(&state->seed, 0, srcRemaining);
         int const dstCapacity = state->compressed.size - state->compressed.pos;
         int const cSize = LZ4_compress_HC_continue(state->cstreamHC, src, dst,
-                                                   srcSize, dstCapacity);
+                          srcSize, dstCapacity);
         FUZZ_ASSERT(cSize > 0);
         DEBUGLOG(2, "srcSize = %d", srcSize);
         state->data.pos += srcSize;
@@ -272,14 +272,14 @@ static void state_attachDictHCRoundTrip(state_t* state)
 }
 
 round_trip_t roundTrips[] = {
-  &state_prefixRoundTrip,
-  &state_extDictRoundTrip,
-  &state_loadDictRoundTrip,
-  &state_attachDictRoundTrip,
-  &state_prefixHCRoundTrip,
-  &state_extDictHCRoundTrip,
-  &state_loadDictHCRoundTrip,
-  &state_attachDictHCRoundTrip,
+    &state_prefixRoundTrip,
+    &state_extDictRoundTrip,
+    &state_loadDictRoundTrip,
+    &state_attachDictRoundTrip,
+    &state_prefixHCRoundTrip,
+    &state_extDictHCRoundTrip,
+    &state_loadDictHCRoundTrip,
+    &state_attachDictHCRoundTrip,
 };
 
 int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)

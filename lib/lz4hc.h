@@ -89,7 +89,7 @@ LZ4LIB_API int LZ4_compress_HC_extStateHC(void* stateHC, const char* src, char* 
  * `srcSizePtr` : on success, *srcSizePtr is updated to indicate how much bytes were read from `src`
  */
 LZ4LIB_API int LZ4_compress_HC_destSize(void* stateHC,
-                                  const char* src, char* dst,
+                                        const char* src, char* dst,
                                         int* srcSizePtr, int targetDstSize,
                                         int compressionLevel);
 
@@ -98,7 +98,7 @@ LZ4LIB_API int LZ4_compress_HC_destSize(void* stateHC,
  *  Streaming Compression
  *  Bufferless synchronous API
  **************************************/
- typedef union LZ4_streamHC_u LZ4_streamHC_t;   /* incomplete type (defined later) */
+typedef union LZ4_streamHC_u LZ4_streamHC_t;   /* incomplete type (defined later) */
 
 /*! LZ4_createStreamHC() and LZ4_freeStreamHC() :
  *  These functions create and release memory for LZ4 HC streaming state.
@@ -156,8 +156,8 @@ LZ4LIB_API void LZ4_resetStreamHC_fast(LZ4_streamHC_t* streamHCPtr, int compress
 LZ4LIB_API int  LZ4_loadDictHC (LZ4_streamHC_t* streamHCPtr, const char* dictionary, int dictSize);
 
 LZ4LIB_API int LZ4_compress_HC_continue (LZ4_streamHC_t* streamHCPtr,
-                                   const char* src, char* dst,
-                                         int srcSize, int maxDstSize);
+        const char* src, char* dst,
+        int srcSize, int maxDstSize);
 
 /*! LZ4_compress_HC_continue_destSize() : v1.9.0+
  *  Similar to LZ4_compress_HC_continue(),
@@ -170,8 +170,8 @@ LZ4LIB_API int LZ4_compress_HC_continue (LZ4_streamHC_t* streamHCPtr,
  *           Note that this function may not consume the entire input.
  */
 LZ4LIB_API int LZ4_compress_HC_continue_destSize(LZ4_streamHC_t* LZ4_streamHCPtr,
-                                           const char* src, char* dst,
-                                                 int* srcSizePtr, int targetDstSize);
+        const char* src, char* dst,
+        int* srcSizePtr, int targetDstSize);
 
 LZ4LIB_API int LZ4_saveDictHC (LZ4_streamHC_t* streamHCPtr, char* safeBuffer, int maxDictSize);
 
@@ -402,7 +402,7 @@ LZ4LIB_STATIC_API int LZ4_compress_HC_extStateHC_fastReset (
  *  through the lifetime of the stream session.
  */
 LZ4LIB_STATIC_API void LZ4_attach_HC_dictionary(
-          LZ4_streamHC_t *working_stream,
+    LZ4_streamHC_t *working_stream,
     const LZ4_streamHC_t *dictionary_stream);
 
 #if defined (__cplusplus)

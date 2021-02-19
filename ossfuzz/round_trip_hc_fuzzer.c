@@ -17,7 +17,7 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
 {
     FUZZ_dataProducer_t *producer = FUZZ_dataProducer_create(data, size);
     int const level = FUZZ_dataProducer_range32(producer,
-        LZ4HC_CLEVEL_MIN, LZ4HC_CLEVEL_MAX);
+                      LZ4HC_CLEVEL_MIN, LZ4HC_CLEVEL_MAX);
     size = FUZZ_dataProducer_remainingBytes(producer);
 
     size_t const dstCapacity = LZ4_compressBound(size);
