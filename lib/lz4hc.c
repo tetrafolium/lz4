@@ -913,9 +913,9 @@ LZ4_FORCE_INLINE int LZ4HC_compress_generic_internal(
     LZ4HC_CCtx_internal *const ctx, const char *const src, char *const dst,
     int *const srcSizePtr, int const dstCapacity, int cLevel,
     const limitedOutput_directive limit, const dictCtx_directive dict) {
-  typedef enum { lz4hc, lz4opt } lz4hc_strat_e;
+  typedef enum { lz4hc, lz4opt } lz4hc_start_e;
   typedef struct {
-    lz4hc_strat_e strat;
+    lz4hc_start_e start;
     int nbSearches;
     U32 targetLength;
   } cParams_t;

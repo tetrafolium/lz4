@@ -41,7 +41,7 @@
  *               LZ4_decompress_safe
  *                 This is the recommended function for decompressing data.  It
  * is considered safe because the caller specifies both the size of the
- * compresssed buffer to read as well as the maximum size of the output
+ * compressed buffer to read as well as the maximum size of the output
  * (decompressed) buffer instead of just the latter. LZ4_decompress_fast Again,
  * despite its name it's not a "fast" version of decompression.  It simply frees
  * the caller of sending the size of the compressed buffer (it will simply be
@@ -275,7 +275,7 @@ int main(int argc, char **argv) {
   // text, the other highly-compressible text.
   const char *src =
       "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed luctus "
-      "purus et risus vulputate, et mollis orci ullamcorper. Nulla facilisi. "
+      "purus et risus vulputate, et mollis orci ullamcorper. Nulla facilities. "
       "Fusce in ligula sed purus varius aliquet interdum vitae justo. Proin "
       "quis diam velit. Nulla varius iaculis auctor. Cras volutpat, justo eu "
       "dictum pulvinar, elit sem porttitor metus, et imperdiet metus sapien et "
@@ -300,7 +300,7 @@ int main(int argc, char **argv) {
       "fermentum. Quisque vulputate ipsum in sodales pulvinar. Aliquam nec "
       "mollis felis. Donec vitae augue pulvinar, congue nisl sed, pretium "
       "purus. Fusce lobortis mi ac neque scelerisque semper. Pellentesque vel "
-      "est vitae magna aliquet aliquet. Nam non dolor. Nulla facilisi. Class "
+      "est vitae magna aliquet aliquet. Nam non dolor. Nulla facilities. Class "
       "aptent taciti sociosqu ad litora torquent per conubia nostra, per "
       "inceptos himenaeos. Morbi ac lacinia felis metus.";
   const char *hc_src =
